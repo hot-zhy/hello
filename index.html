@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赵晗瑜 | Hanyu Zhao - AI & Software Engineer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(15, 15, 25, 0.8);
+            --accent-cyan: #00f5ff;
+            --accent-magenta: #ff00aa;
+            --accent-purple: #a855f7;
+            --accent-green: #00ff88;
+            --text-primary: #e8e8f0;
+            --text-muted: #8888aa;
+            --glow-cyan: 0 0 30px rgba(0, 245, 255, 0.4);
+            --glow-magenta: 0 0 30px rgba(255, 0, 170, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            line-height: 1.7;
+        }
+
+        /* Animated grid background */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% 20%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0, 245, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 30% at 50% 50%, rgba(255, 0, 170, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(10, 10, 15, 0.95), transparent);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(10, 10, 15, 0.9);
+            box-shadow: 0 4px 30px rgba(0, 245, 255, 0.1);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 0.5rem 1.2rem;
+            border: 1px solid rgba(0, 245, 255, 0.4);
+            border-radius: 50px;
+            color: var(--accent-cyan);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-magenta) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .hero .tagline {
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: var(--bg-dark);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 40px rgba(0, 245, 255, 0.6);
+        }
+
+        .btn-outline {
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: rgba(0, 245, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Section styles */
+        section {
+            padding: 6rem 4rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 2rem;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-magenta));
+            border-radius: 2px;
+        }
+
+        /* About */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .about-grid { grid-template-columns: 1fr; }
+        }
+
+        .about-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s ease;
+        }
+
+        .about-card:hover {
+            border-color: rgba(0, 245, 255, 0.3);
+            box-shadow: var(--glow-cyan);
+            transform: translateY(-5px);
+        }
+
+        .about-card h3 {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .honors-list {
+            list-style: none;
+        }
+
+        .honors-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .honors-list li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--accent-magenta);
+        }
+
+        /* Experience Timeline */
+        .timeline {
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-magenta), transparent);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 4rem;
+            padding-bottom: 3rem;
+        }
+
+        .timeline-item:last-child { padding-bottom: 0; }
+
+        .timeline-dot {
+            position: absolute;
+            left: 12px;
+            top: 0.3rem;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--accent-cyan);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .timeline-content {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-content:hover {
+            border-color: rgba(0, 245, 255, 0.2);
+            transform: translateX(10px);
+        }
+
+        .timeline-date {
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-company {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-role {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .timeline-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Skills */
+        .skills-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .skill-tag {
+            padding: 0.6rem 1.2rem;
+            background: rgba(0, 245, 255, 0.08);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 8px;
+            color: var(--accent-cyan);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: rgba(0, 245, 255, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .skill-category {
+            margin-bottom: 2rem;
+        }
+
+        .skill-category h4 {
+            color: var(--accent-magenta);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        /* Projects */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .project-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .project-card:hover {
+            border-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-8px);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .project-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .project-card h3 {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-card .meta {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .project-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Contact */
+        .contact-section {
+            text-align: center;
+            padding: 6rem 2rem;
+        }
+
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem 2rem;
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .contact-link:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-5px);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .contact-link span {
+            color: var(--accent-cyan);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 20px var(--accent-cyan); }
+            50% { opacity: 0.7; box-shadow: 0 0 30px var(--accent-cyan); }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-magenta));
+            border-radius: 4px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { display: none; }
+            section { padding: 4rem 1.5rem; }
+            .timeline::before { left: 10px; }
+            .timeline-item { padding-left: 2.5rem; }
+            .timeline-dot { left: 2px; width: 14px; height: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-gradient"></div>
+
+    <nav>
+        <div class="logo">ZHAO HANYU</div>
+        <div class="nav-links">
+            <a href="#about">关于</a>
+            <a href="#experience">经历</a>
+            <a href="#skills">技能</a>
+            <a href="#projects">项目</a>
+            <a href="#contact">联系</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <span class="hero-badge">AI4Edu · LLM · Full-Stack</span>
+        <h1>赵晗瑜</h1>
+        <p class="subtitle">Hanyu Zhao</p>
+        <p class="tagline">华东师范大学软件工程硕士 · 智能教育方向 · 一区论文作者 · 英伟达 / 喜马拉雅 实习经历</p>
+        <div class="cta-buttons">
+            <a href="#contact" class="btn btn-primary">联系我</a>
+            <a href="#projects" class="btn btn-outline">查看项目</a>
+        </div>
+    </section>
+
+    <section id="about" class="fade-in">
+        <h2 class="section-title">关于我</h2>
+        <div class="about-grid">
+            <div class="about-card">
+                <h3>教育背景</h3>
+                <p><strong>华东师范大学</strong> · 软件工程</p>
+                <p style="color: var(--text-muted); margin-top: 0.5rem;">本科 2020-2024 · 硕士 2024-2027（在读）</p>
+                <p style="margin-top: 1rem;">GPA 3.87/4.0（前5%）· CET-6 · 雅思 6.0</p>
+            </div>
+            <div class="about-card">
+                <h3>荣誉奖项</h3>
+                <ul class="honors-list">
+                    <li>华东师范大学优秀学业奖学金特等奖 (2022-2024)</li>
+                    <li>上海市优秀毕业生</li>
+                    <li>2024 AIGC 高校计算机设计大赛全国二等奖</li>
+                    <li>2024 全球数学推理与解题比赛二等奖</li>
+                    <li>2024 中国研究生人工智能创新大赛（华为杯）全国三等奖</li>
+                    <li>一区 Top 期刊论文已 accept</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="fade-in">
+        <h2 class="section-title">实习经历</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2025.12 - 2026.03</div>
+                    <div class="timeline-company">英伟达 NVIDIA</div>
+                    <div class="timeline-role">软件开发</div>
+                    <div class="timeline-desc">NVPunish Web UI（GPU 压力测试平台可视化）：为 NVIDIA GPU 压测框架提供 Web 监控、报告与执行流可视化，支撑多机多 Job 的测试管理与状态追踪。执行流 Gantt 图、监控看板、Django 后端、GitLab CI 构建。</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2025.09 - 2025.12</div>
+                    <div class="timeline-company">喜马拉雅</div>
+                    <div class="timeline-role">Agent 后端开发</div>
+                    <div class="timeline-desc">「智慧大师」智能陪伴与建议系统：用户画像与特征抽取（Dify + Mem0）、多源信息融合（MCP）、向量召回（Milvus）、RabbitMQ 异步化，提升检索推荐效率与高并发稳定性。</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2025.04 - 2025.08</div>
+                    <div class="timeline-company">上海智能教育研究院</div>
+                    <div class="timeline-role">后端开发</div>
+                    <div class="timeline-desc">「小花狮」智能作文辅导系统（10,000+ 用户）：大模型+小模型混合架构、RabbitMQ 异步批改、Redisson 分布式锁、Redis 缓存、事件驱动报表，支撑 QPS 2,000+，P99 &lt; 100ms。</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2024.11 - 2025.04</div>
+                    <div class="timeline-company">上海人工智能创新中心</div>
+                    <div class="timeline-role">后端开发</div>
+                    <div class="timeline-desc">科研助手（思维导图生成）：Go 微服务、Redis Stream + SSE 流式推送、Consumer Group、断点续传与一致性保障。</div>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">2024.02 - 2024.06</div>
+                    <div class="timeline-company">易保网络技术 EBaoTech</div>
+                    <div class="timeline-role">大模型算法</div>
+                    <div class="timeline-desc">自动化 Rego 策略生成系统：LLM 自然语言转 Rego、LoRA/PEFT 微调、语料清洗与评测。</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="skills" class="fade-in">
+        <h2 class="section-title">技术栈</h2>
+        <div class="skill-category">
+            <h4>后端 & 架构</h4>
+            <div class="skills-grid">
+                <span class="skill-tag">Python</span>
+                <span class="skill-tag">Java</span>
+                <span class="skill-tag">Spring Boot</span>
+                <span class="skill-tag">Django</span>
+                <span class="skill-tag">Go</span>
+                <span class="skill-tag">SpringCloud</span>
+                <span class="skill-tag">Nacos</span>
+                <span class="skill-tag">Sentinel</span>
+                <span class="skill-tag">RabbitMQ</span>
+                <span class="skill-tag">Redis</span>
+                <span class="skill-tag">MySQL</span>
+                <span class="skill-tag">Docker</span>
+                <span class="skill-tag">Kubernetes</span>
+            </div>
+        </div>
+        <div class="skill-category">
+            <h4>AI & LLM</h4>
+            <div class="skills-grid">
+                <span class="skill-tag">LLM</span>
+                <span class="skill-tag">RAG</span>
+                <span class="skill-tag">Dify</span>
+                <span class="skill-tag">Coze</span>
+                <span class="skill-tag">AI Agent</span>
+                <span class="skill-tag">MCP</span>
+                <span class="skill-tag">Context Engineering</span>
+                <span class="skill-tag">LoRA / PEFT</span>
+                <span class="skill-tag">PyTorch</span>
+                <span class="skill-tag">Milvus</span>
+                <span class="skill-tag">Mem0</span>
+            </div>
+        </div>
+        <div class="skill-category">
+            <h4>前端 & 其他</h4>
+            <div class="skills-grid">
+                <span class="skill-tag">Vue3</span>
+                <span class="skill-tag">TypeScript</span>
+                <span class="skill-tag">React</span>
+                <span class="skill-tag">Plotly</span>
+                <span class="skill-tag">REST API</span>
+                <span class="skill-tag">GitLab CI</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="fade-in">
+        <h2 class="section-title">项目经历</h2>
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3>Java 课堂 AI 小助手 & 面试系统</h3>
+                <div class="meta">一区论文 accept · 前后端 + 算法</div>
+                <p>RAG + LLM 知识问答、编程导师（代码评测/反馈）、自适应学习推荐（知识追踪）、AI 面试系统（自适应选题），学生满意度 84%。</p>
+            </div>
+            <div class="project-card">
+                <h3>AAAI 2024 全球数学推理竞赛</h3>
+                <div class="meta">全球第二名</div>
+                <p>基于 ChatGLM，通过 Prompt 工程、LoRA 微调、PAL 编程辅助、多模型投票，显著提升数学解题与推理能力。</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section fade-in">
+        <h2 class="section-title">联系我</h2>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">期待与您交流技术、教育 AI 或职业机会</p>
+        <div class="contact-links">
+            <a href="mailto:zhy19933153268@163.com" class="contact-link">
+                <span>✉</span> zhy19933153268@163.com
+            </a>
+            <a href="tel:19933153268" class="contact-link">
+                <span>📱</span> 199 3315 3268
+            </a>
+        </div>
+    </section>
+
+    <script>
+        // Nav scroll effect
+        window.addEventListener('scroll', () => {
+            document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Fade-in on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>

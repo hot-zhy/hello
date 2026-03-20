@@ -1,0 +1,7 @@
+life_curve.py
+life_curve.png
+requirements.txt
+*.java
+*.py
+__pycache__/
+*.pyc
