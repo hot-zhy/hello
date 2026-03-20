@@ -139,12 +139,16 @@
 
             <div class="toc-category">
                 <div class="sidebar-title">计算机网络</div>
+                <a href="#" class="toc-item" data-id="tcp-udp">TCP 与 UDP 区别</a>
                 <a href="#" class="toc-item" data-id="tcp-handshake">TCP 握手三次、挥手四次为什么</a>
                 <a href="#" class="toc-item" data-id="tcp-diff">握手与挥手的区别，为什么少一次</a>
                 <a href="#" class="toc-item" data-id="http-https">HTTP 与 HTTPS 区别</a>
                 <a href="#" class="toc-item" data-id="http-versions">HTTP/1.0 到 HTTP/3 演进</a>
                 <a href="#" class="toc-item" data-id="browser-request">打开网页发生了什么</a>
                 <a href="#" class="toc-item" data-id="tls-handshake">TLS 握手过程</a>
+                <a href="#" class="toc-item" data-id="dns">DNS 解析过程</a>
+                <a href="#" class="toc-item" data-id="cors">跨域与 CORS</a>
+                <a href="#" class="toc-item" data-id="cdn">CDN 原理</a>
             </div>
 
             <div class="toc-category">
@@ -157,6 +161,10 @@
             <div class="toc-category">
                 <div class="sidebar-title">操作系统</div>
                 <a href="#" class="toc-item" data-id="process-thread">进程与线程的区别及通信</a>
+                <a href="#" class="toc-item" data-id="process-schedule">进程调度算法</a>
+                <a href="#" class="toc-item" data-id="virtual-memory">虚拟内存与页面置换</a>
+                <a href="#" class="toc-item" data-id="deadlock-theory">死锁条件与预防</a>
+                <a href="#" class="toc-item" data-id="select-poll-epoll">select / poll / epoll</a>
             </div>
 
             <div class="toc-category">
@@ -284,7 +292,7 @@
         <main class="reader">
             <div class="reader-welcome" id="welcome">
                 <h2>面经 / 面试准备</h2>
-                <p>从左侧目录选择题目，右侧查看答案。整合面试拷打宝典、牛客、掘金等大厂后端面经，涵盖计算机网络、Netty、Redis、MySQL、Java、Spring、JVM、系统设计、AI、算法、运维排查、项目实战等。</p>
+                <p>从左侧目录选择题目，右侧查看答案。整合面试拷打宝典、牛客、掘金等大厂后端面经，涵盖计算机网络（TCP/UDP、HTTP、DNS、CORS、CDN）、操作系统（进程调度、虚拟内存、死锁、select/epoll）、Netty、Redis、MySQL、Java、Spring、JVM、系统设计、AI、算法、运维排查、项目实战等。</p>
             </div>
 
             <article class="article-content" id="tcp-handshake">
@@ -308,40 +316,78 @@
                 <p><strong>挥手多一次的原因：</strong>被动方收到 FIN 时，可能还有数据未发送完，必须先 ACK 确认收到关闭请求，等数据发完后再发 FIN，因此 ACK 和 FIN 必须分开发送。</p>
             </article>
 
+            <article class="article-content" id="tcp-udp">
+                <h1>TCP 与 UDP 区别</h1>
+                <div class="meta">计算机网络</div>
+                <p><strong>TCP：</strong>面向连接、可靠传输（确认、重传、拥塞控制、流量控制）、有序、面向字节流。头部 20 字节起，开销大。</p>
+                <p><strong>UDP：</strong>无连接、不可靠、无序、面向报文。头部 8 字节，开销小。</p>
+                <p><strong>应用场景：</strong>TCP 适合 HTTP、FTP、邮件等需可靠传输的场景；UDP 适合视频直播、游戏、DNS 查询、广播等对实时性要求高、可容忍少量丢包的场景。</p>
+                <p><strong>延展：</strong>QUIC 基于 UDP 实现可靠传输，解决 TCP 队头阻塞；TCP 的拥塞控制有慢启动、拥塞避免、快重传、快恢复等算法。</p>
+            </article>
+
             <article class="article-content" id="http-https">
                 <h1>HTTP 与 HTTPS 的区别</h1>
                 <div class="meta">计算机网络</div>
                 <p><strong>核心区别：</strong>HTTP 明文传输；HTTPS = HTTP + SSL/TLS，加密传输。端口 80 vs 443。</p>
                 <p><strong>HTTP 三大问题：</strong>窃听（明文可被中间人看到）、篡改（无完整性校验）、冒充（无身份验证）。</p>
-                <p><strong>HTTPS 加密流程：</strong></p>
-                <ol>
-                    <li>客户端发送支持的加密套件 + 随机数 A</li>
-                    <li>服务端选择套件 + 下发证书 + 随机数 B</li>
-                    <li>客户端验证证书 → 用公钥加密随机数 C 发给服务端</li>
-                    <li>双方用 A+B+C 生成会话密钥，后续用对称加密通信</li>
-                </ol>
-                <p>混合加密：非对称加密用于密钥交换，对称加密用于数据传输（速度快）。</p>
+                <p><strong>HTTPS 加密流程：</strong>① 客户端：加密套件 + 随机数 A；② 服务端：选择套件 + 证书 + 随机数 B；③ 客户端：校验证书、用公钥加密随机数 C；④ 双方用 A+B+C 生成会话密钥；⑤ 后续对称加密传输。</p>
+                <p><strong>混合加密：</strong>非对称加密用于密钥交换（安全但慢）；对称加密用于数据传输（快）。</p>
+                <p><strong>延展：</strong>证书链验证（服务器证书→中间 CA→根 CA）；TLS 1.3 简化握手到 1 RTT；HSTS 强制 HTTPS。</p>
             </article>
 
             <article class="article-content" id="http-versions">
                 <h1>HTTP/1.0 到 HTTP/3 演进</h1>
                 <div class="meta">计算机网络</div>
-                <p><strong>HTTP/1.0：</strong>一个请求一次 TCP 连接，成本高。</p>
-                <p><strong>HTTP/1.1：</strong>Keep-Alive 长连接、Host 头、虚拟主机。但响应按序、队头阻塞；文本协议头重复。</p>
-                <p><strong>HTTP/2：</strong>多路复用、头部压缩、帧交错。底层仍 TCP，丢包时队头阻塞。</p>
-                <p><strong>HTTP/3：</strong>基于 QUIC（UDP），按 stream 独立处理，解决队头阻塞。</p>
+                <p><strong>HTTP/1.0：</strong>一个请求一次 TCP 连接，成本高；无 Host 头。</p>
+                <p><strong>HTTP/1.1：</strong>Keep-Alive 长连接、Host 头、虚拟主机、分块传输。但响应按序返回，队头阻塞；文本协议头重复；需多连接并行拉资源。</p>
+                <p><strong>HTTP/2：</strong>多路复用（一连接多请求/响应并行）、头部压缩 HPACK、二进制分帧、服务端推送。底层仍 TCP，丢包时整连接阻塞（队头阻塞）。</p>
+                <p><strong>HTTP/3：</strong>基于 QUIC（UDP），每个 stream 独立，某 stream 丢包不影响其他；0-RTT 建连；内置 TLS 1.3。</p>
+                <p><strong>延展：</strong>队头阻塞是 TCP 特性；QUIC 在用户态实现拥塞控制，可快速迭代。</p>
             </article>
 
             <article class="article-content" id="browser-request">
                 <h1>打开网页发生了什么</h1>
                 <div class="meta">计算机网络</div>
-                <p>解析 URL → 缓存判断（浏览器/系统/路由器）→ DNS 解析 → 获取 MAC（ARP）→ TCP 三次握手 → TLS 握手 → 发 HTTP 请求 → 服务器处理返回 → 解析 HTML 渲染。</p>
+                <p><strong>① 解析 URL：</strong>拆出协议、域名、端口、路径。</p>
+                <p><strong>② 缓存判断：</strong>浏览器缓存 → 系统缓存 → 路由器缓存 → 运营商缓存，命中则直接返回 IP。</p>
+                <p><strong>③ DNS 解析：</strong>未命中则本地 DNS 迭代查询根→TLD→权威 DNS，得到 IP。</p>
+                <p><strong>④ 获取 MAC：</strong>同子网则 ARP 获取目标 MAC；不同子网则 ARP 获取网关 MAC。</p>
+                <p><strong>⑤ TCP 三次握手：</strong>建立连接。</p>
+                <p><strong>⑥ TLS 握手：</strong>HTTPS 时协商密钥、校验证书。</p>
+                <p><strong>⑦ HTTP 请求：</strong>发送请求行、头、体；服务器处理并返回状态码、头、体。</p>
+                <p><strong>⑧ 解析渲染：</strong>解析 HTML 构建 DOM、解析 CSS 构建 CSSOM、合成渲染树、布局、绘制。遇到 script 可能阻塞。</p>
+                <p><strong>延展：</strong>CDN 加速、HTTP/2 多路复用、资源预加载、关键渲染路径优化。</p>
             </article>
 
             <article class="article-content" id="tls-handshake">
                 <h1>TLS 握手过程</h1>
                 <div class="meta">计算机网络</div>
                 <p>① 客户端：支持的加密方式、协议版本、随机数 a、公开材料 A；② 服务端：选择加密方式、证书（含公钥）、随机数 b、公开材料 B；③ 客户端：校验证书、域名、有效期；④ 双方：a+B/b+A 算出会话密钥 K；⑤ 后续用 K 对称加密传输。</p>
+            </article>
+
+            <article class="article-content" id="dns">
+                <h1>DNS 解析过程</h1>
+                <div class="meta">计算机网络</div>
+                <p><strong>域名层级：</strong>根域名（.）→ 顶级域名（.com/.cn）→ 二级域名（.baidu.com）→ 三级域名（www.baidu.com）。</p>
+                <p><strong>解析流程：</strong>① 查浏览器/系统/路由器缓存；② 无则请求本地 DNS（递归查询）；③ 本地 DNS 迭代：根域名服务器 → 顶级域名服务器 → 权威 DNS 服务器，逐级返回下一级服务器地址；④ 最终得到 IP 返回。</p>
+                <p><strong>递归 vs 迭代：</strong>客户端→本地 DNS 为递归（客户端只发一次请求）；本地 DNS→根/TLD/权威 为迭代（服务器逐级查询）。</p>
+                <p><strong>延展：</strong>DNS 记录类型 A（IPv4）、AAAA（IPv6）、CNAME（别名）、MX（邮件）；DNS 劫持、污染；HTTPDNS 绕过运营商 DNS 防劫持。</p>
+            </article>
+
+            <article class="article-content" id="cors">
+                <h1>跨域与 CORS</h1>
+                <div class="meta">计算机网络</div>
+                <p><strong>同源策略：</strong>协议、域名、端口三者相同才同源。不同源则跨域，浏览器限制脚本访问跨域资源。</p>
+                <p><strong>解决方案：</strong>① CORS：服务端设置 Access-Control-Allow-Origin 等响应头；预检请求（OPTIONS）用于非简单请求；② JSONP：利用 script 标签无跨域限制，但仅 GET、安全性差；③ 代理：同源服务器转发请求；④ postMessage：跨窗口通信。</p>
+                <p><strong>延展：</strong>简单请求（GET/POST/HEAD + 简单头）不发预检；复杂请求先 OPTIONS 预检再实际请求。</p>
+            </article>
+
+            <article class="article-content" id="cdn">
+                <h1>CDN 原理</h1>
+                <div class="meta">计算机网络</div>
+                <p><strong>核心思想：</strong>将静态资源缓存到离用户更近的节点，就近访问，减少源站压力和延迟。</p>
+                <p><strong>流程：</strong>用户请求 → 本地 DNS 解析（CNAME 指向 CDN 调度器）→ 调度器根据用户 IP、节点负载返回最优边缘节点 IP → 用户访问边缘节点；边缘节点有则直接返回，无则回源拉取并缓存。</p>
+                <p><strong>延展：</strong>边缘节点分布全球；缓存策略（强缓存、协商缓存）；预热、刷新、 purge；DDoS 防护；视频 CDN 多级分发。</p>
             </article>
 
             <article class="article-content" id="netty-tomcat">
@@ -372,9 +418,44 @@
             <article class="article-content" id="process-thread">
                 <h1>进程与线程的区别及通信方式</h1>
                 <div class="meta">操作系统</div>
-                <p><strong>区别：</strong>进程是资源分配单位，拥有独立地址空间；线程是 CPU 调度单位，共享进程资源。进程创建/切换开销大，线程开销小。一个线程崩溃可能导致整个进程死亡。</p>
-                <p><strong>进程间通信（IPC）：</strong>管道、消息队列、共享内存、信号量、信号、套接字。</p>
+                <p><strong>区别：</strong>进程是资源分配单位，拥有独立地址空间、文件句柄等；线程是 CPU 调度单位，共享进程资源（堆、方法区），独有栈、PC、寄存器。进程创建/切换开销大（需切换页表、TLB 刷新），线程开销小。一个线程崩溃可能导致整个进程死亡。</p>
+                <p><strong>进程间通信（IPC）：</strong>管道（匿名/命名）、消息队列、共享内存（最快，需配合信号量）、信号量、信号、套接字（跨主机）。</p>
                 <p><strong>线程间通信：</strong>共享地址空间，可直接访问全局变量；同步用互斥锁、条件变量、信号量等。</p>
+                <p><strong>延展：</strong>协程：用户态轻量级线程，由用户调度；内核线程 vs 用户线程（1:1、N:1、M:N 模型）。</p>
+            </article>
+
+            <article class="article-content" id="process-schedule">
+                <h1>进程调度算法</h1>
+                <div class="meta">操作系统</div>
+                <p><strong>FCFS（先来先服务）：</strong>按到达顺序调度，非抢占。简单但护航效应（长作业阻塞短作业）。</p>
+                <p><strong>SJF（短作业优先）：</strong>选估计运行时间最短的进程。平均等待时间最优，但长作业可能饥饿，且需预知运行时间。</p>
+                <p><strong>RR（时间片轮转）：</strong>抢占式，按 FCFS 排队，每进程执行一个时间片后回队尾。公平、响应快；时间片过大退化为 FCFS，过小增加上下文切换。一般 10~100ms。</p>
+                <p><strong>延展：</strong>多级反馈队列：结合 FCFS、RR、优先级；Linux CFS 调度器基于红黑树、虚拟运行时间。</p>
+            </article>
+
+            <article class="article-content" id="virtual-memory">
+                <h1>虚拟内存与页面置换</h1>
+                <div class="meta">操作系统</div>
+                <p><strong>虚拟内存：</strong>将物理内存和磁盘结合，为进程提供比物理内存更大的连续地址空间。通过页表映射虚拟地址到物理地址。</p>
+                <p><strong>页面置换：</strong>缺页时若物理页已满，需淘汰一页。OPT（最优，不可实现）→ FIFO（简单，可能 Belady 异常）→ LRU（基于局部性，需硬件支持）→ 时钟算法（改进 FIFO，用使用位）→ 改进型时钟（使用位+修改位，优先换未修改的）。</p>
+                <p><strong>延展：</strong>缺页时从磁盘调入约 25ms，远超其他操作，降低缺页率至关重要；TLB 加速地址转换。</p>
+            </article>
+
+            <article class="article-content" id="deadlock-theory">
+                <h1>死锁条件与预防</h1>
+                <div class="meta">操作系统</div>
+                <p><strong>四个必要条件：</strong>① 互斥：资源不能共享；② 持有并等待：持有资源的同时等待其他资源；③ 不可剥夺：资源只能主动释放；④ 环路等待：存在进程链形成环形等待，每个进程都在等下一个进程持有的资源。</p>
+                <p><strong>预防：</strong>破坏其一即可。破坏环路等待：资源有序分配，按编号顺序申请；破坏持有并等待：一次性申请所有资源或申请前释放已有资源。</p>
+                <p><strong>避免：</strong>银行家算法动态检测安全状态；加锁时限（超时释放重试）；锁顺序统一。</p>
+            </article>
+
+            <article class="article-content" id="select-poll-epoll">
+                <h1>select / poll / epoll</h1>
+                <div class="meta">操作系统</div>
+                <p><strong>select：</strong>最多 1024 个 fd；每次调用拷贝 fd 集合到内核；O(n) 轮询所有 fd；可移植性好。</p>
+                <p><strong>poll：</strong>无 fd 数量限制；仍需每次拷贝；同样 O(n) 轮询。</p>
+                <p><strong>epoll：</strong>无 fd 限制；内核维护红黑树+就绪链表，无需每次拷贝；只关心就绪 fd，效率与连接总数无关；支持 ET/LT 两种触发模式。适合高并发。</p>
+                <p><strong>延展：</strong>epoll 是 Linux 特有；epoll_create 创建、epoll_ctl 注册、epoll_wait 等待；ET 边缘触发需一次读完，否则可能丢事件。</p>
             </article>
 
             <article class="article-content" id="sync-async">
@@ -383,11 +464,12 @@
                 <p><strong>同步/异步：</strong>调用方是否等待结果。同步：调用后阻塞直到拿到结果；异步：调用后立即返回，结果通过回调/通知获取。</p>
                 <p><strong>阻塞/非阻塞：</strong>等待时线程是否挂起。阻塞：线程挂起；非阻塞：线程可做其他事。</p>
                 <ul>
-                    <li><strong>同步阻塞 (BIO)：</strong>read() 一直等数据，线程阻塞。典型：传统 Socket。</li>
+                    <li><strong>同步阻塞 (BIO)：</strong>read() 一直等数据，线程阻塞。典型：传统 Socket。一连接一线程。</li>
                     <li><strong>同步非阻塞 (NIO 轮询)：</strong>read() 立即返回，无数据则轮询。CPU 空转。</li>
                     <li><strong>异步阻塞：</strong>少见，如 select 等待多个 fd 但阻塞。</li>
-                    <li><strong>异步非阻塞 (epoll/多路复用)：</strong>注册 fd 和回调，事件就绪时通知，无需轮询。</li>
+                    <li><strong>异步非阻塞 (epoll/多路复用)：</strong>注册 fd 和回调，事件就绪时通知，无需轮询。高并发首选。</li>
                 </ul>
+                <p><strong>延展：</strong>Reactor 模式（单/多线程 Reactor）；Proactor 模式（异步 IO）；Java NIO 的 Selector 对应 epoll。</p>
             </article>
 
             <article class="article-content" id="optimistic-pessimistic">
@@ -487,10 +569,11 @@
             <article class="article-content" id="rate-limit">
                 <h1>限流算法：漏桶 vs 令牌桶</h1>
                 <div class="meta">Redis / 缓存 · 大厂高频</div>
-                <p><strong>漏桶：</strong>请求进桶排队，以固定速率流出。无论请求多快，输出速率恒定。无法处理突发。</p>
-                <p><strong>令牌桶：</strong>以恒定速率往桶里放令牌，请求取到令牌才通过。桶有容量，可应对短时突发。</p>
+                <p><strong>漏桶：</strong>请求进桶排队，以固定速率流出。无论请求多快，输出速率恒定。无法处理突发，输出非常平滑。</p>
+                <p><strong>令牌桶：</strong>以恒定速率往桶里放令牌，请求取到令牌才通过。桶有容量，可应对短时突发（桶满时相当于漏桶）。</p>
                 <p><strong>区别：</strong>令牌桶允许突发、漏桶强制平滑。令牌桶保护自己（限调用方），漏桶保护下游（限输出）。</p>
                 <p><strong>场景：</strong>接口限流用令牌桶（Guava RateLimiter）；MQ 消费、支付回调用漏桶。</p>
+                <p><strong>延展：</strong>固定窗口有临界问题（0.99s 和 1.0s 各 x 个请求）；滑动窗口更平滑；分布式限流用 Redis+Lua 保证原子性。</p>
             </article>
 
             <article class="article-content" id="seckill">
@@ -725,7 +808,9 @@
             <article class="article-content" id="deadlock">
                 <h1>死锁检查与影响</h1>
                 <div class="meta">运维</div>
-                <p>jstack 打印线程信息，出现 "Found one Java-level deadlock"。或大量 BLOCKED 指向同一锁。死锁：锁粒度小影响局部；线程池耗尽、队列满、拒绝策略触发。</p>
+                <p><strong>检测：</strong>jstack pid 打印线程栈，出现 "Found one Java-level deadlock" 即死锁。或大量线程 BLOCKED 且指向同一把锁。Arthas thread 可查看线程状态。</p>
+                <p><strong>影响：</strong>锁粒度小则只影响某接口/模块；若涉及线程池核心线程则导致线程耗尽、队列满、拒绝策略触发、请求堆积。</p>
+                <p><strong>延展：</strong>预防见「死锁条件与预防」；线上可考虑 -XX:+PrintConcurrentLocks 等 JVM 参数辅助排查。</p>
             </article>
 
             <article class="article-content" id="linux-log">
