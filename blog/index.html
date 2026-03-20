@@ -290,20 +290,15 @@
             <article class="article-content" id="tcp-handshake">
                 <h1>TCP 握手是三次，挥手是四次为什么？</h1>
                 <div class="meta">计算机网络</div>
-                <p><strong>三次握手流程：</strong>① 客户端 SYN → ② 服务端 SYN+ACK → ③ 客户端 ACK</p>
+                <p><strong>三次握手流程：</strong>① 客户端 SYN（seq=x）→ ② 服务端 SYN+ACK（seq=y, ack=x+1）→ ③ 客户端 ACK（ack=y+1）</p>
                 <p><strong>为什么是三次：</strong></p>
                 <ul>
-                    <li><strong>防止历史连接：</strong>若只用两次握手，旧 SYN 可能迟到到达，服务端会误开连接并回复 SYN+ACK，客户端收到后发现自己未发起则发 RST 关闭，但服务端已分配资源</li>
-                    <li><strong>同步序列号：</strong>双方需确认对方的初始序列号（ISN），用于后续可靠传输</li>
-                    <li><strong>避免资源浪费：</strong>两次握手时服务端无法确认客户端是否收到 SYN+ACK，若丢失则服务端一直等待</li>
+                    <li><strong>防止历史连接：</strong>若只用两次握手，旧 SYN 可能因网络延迟迟到。服务端收到后误以为新连接，回复 SYN+ACK 并分配资源。客户端发现是旧连接会发 RST，但服务端已浪费资源。</li>
+                    <li><strong>同步序列号：</strong>双方需确认对方的 ISN（初始序列号），用于后续重传、去重、按序组装。</li>
+                    <li><strong>避免资源浪费：</strong>两次握手时，若客户端 SYN+ACK 丢失，服务端无法确认客户端已收到，会一直等待并重发，造成资源浪费。</li>
                 </ul>
-                <p><strong>四次挥手流程：</strong>① 客户端 FIN → ② 服务端 ACK → ③ 服务端 FIN → ④ 客户端 ACK</p>
-                <p><strong>为什么是四次：</strong></p>
-                <ul>
-                    <li>TCP 全双工，双方需各自关闭自己的发送方向</li>
-                    <li>被动方收到 FIN 后可能还有数据要发，先 ACK 确认收到，发完数据再发 FIN</li>
-                    <li>FIN 和 ACK 不能合并，因为中间可能有数据传输</li>
-                </ul>
+                <p><strong>四次挥手流程：</strong>① 客户端 FIN → ② 服务端 ACK → ③ 服务端 FIN → ④ 客户端 ACK（进入 TIME_WAIT）</p>
+                <p><strong>为什么是四次：</strong>TCP 全双工，双方需各自关闭发送方向。被动方收到 FIN 时可能还有数据未发完，必须先 ACK 确认收到关闭请求，等数据发完后再发 FIN，因此 ACK 和 FIN 必须分开发送。</p>
             </article>
 
             <article class="article-content" id="tcp-diff">
@@ -406,17 +401,17 @@
             <article class="article-content" id="redis-lock">
                 <h1>Redis 分布式锁</h1>
                 <div class="meta">系统设计</div>
-                <p><strong>基本实现：</strong><code>SET key value NX EX seconds</code> 原子设置。value 用 UUID 防误删其他客户端的锁。</p>
-                <p><strong>删除时：</strong>需先判断 value 是否为自己，否则可能删别人的锁。用 Lua 保证「判断+删除」原子性。</p>
-                <p><strong>锁续期：</strong>业务执行时间可能超过 TTL，Redisson 看门狗每 1/3 过期时间自动续期。</p>
-                <p><strong>Redlock：</strong>多 Redis 实例（通常 5 个），超过半数加锁成功才认为成功，防止单点故障。</p>
+                <p><strong>基本实现：</strong><code>SET key value NX EX seconds</code> 原子设置。value 用 UUID 或线程唯一标识，防止误删其他客户端的锁。</p>
+                <p><strong>删除时：</strong>必须先判断 value 是否为自己，否则可能删别人的锁（如 A 的锁过期后 B 获取，A 此时删除会误删 B 的锁）。用 Lua 脚本保证「判断+删除」原子性。</p>
+                <p><strong>锁续期：</strong>业务执行时间可能超过 TTL。Redisson 看门狗：未指定 leaseTime 时，每 1/3 过期时间自动续期，直到 unlock() 或 JVM 挂掉。</p>
+                <p><strong>Redlock：</strong>多 Redis 实例（通常 5 个），超过半数加锁成功才认为成功，防止单点故障。加锁时需设置相同的 value 和超时时间。</p>
             </article>
 
             <article class="article-content" id="volatile">
                 <h1>volatile 关键字</h1>
                 <div class="meta">Java 并发</div>
-                <p><strong>内存可见性：</strong>写 volatile 立即刷主存，其他核缓存失效（MESI 协议）；禁止变量缓存到寄存器，强制读 Cache Line。</p>
-                <p><strong>禁止指令重排：</strong>在读写处插入内存屏障；volatile 写 release，volatile 读 acquire。</p>
+                <p><strong>内存可见性：</strong>写 volatile 立即刷主存，其他核缓存失效（MESI 协议）；禁止变量缓存到寄存器，强制读 Cache Line，避免编译器/JIT 优化导致一直用寄存器旧值。</p>
+                <p><strong>禁止指令重排：</strong>在读写处插入内存屏障；volatile 写 release（禁止写前操作跑到写后）；volatile 读 acquire（禁止读后操作跑到读前）。典型 DCL 单例需 volatile 防止 instance 引用先可见但对象未初始化完成。</p>
                 <p><strong>不保证原子性：</strong>i++ 分读-改-写三步，需 AtomicInteger 或 synchronized。</p>
             </article>
 
@@ -443,19 +438,19 @@
             <article class="article-content" id="synchronized-upgrade">
                 <h1>synchronized 锁升级</h1>
                 <div class="meta">Java 并发</div>
-                <p><strong>四种状态：</strong>无锁(01) → 偏向锁(01) → 轻量级锁(00) → 重量级锁(11)</p>
-                <p><strong>偏向锁：</strong>单线程反复进入，Mark Word 记录线程 ID，无竞争时几乎无开销。</p>
-                <p><strong>轻量级锁：</strong>有竞争时，CAS 将 Mark Word 指向栈中 Lock Record，自旋获取。</p>
-                <p><strong>重量级锁：</strong>自旋失败（约 10 次）或多线程竞争，升级为 Monitor，线程进入阻塞队列。</p>
+                <p><strong>四种状态：</strong>无锁(01) → 偏向锁(01) → 轻量级锁(00) → 重量级锁(11)，只能升级不能降级。</p>
+                <p><strong>偏向锁：</strong>单线程反复进入同步块时，Mark Word 记录线程 ID，无竞争时几乎无开销。有 4 秒延迟启动。</p>
+                <p><strong>轻量级锁：</strong>另一线程竞争时，在栈帧创建 Lock Record，CAS 将 Mark Word 指向 Lock Record；自旋获取，失败则升级。</p>
+                <p><strong>重量级锁：</strong>自旋超过阈值（约 10 次）或多线程竞争，升级为 Monitor，Mark Word 指向 Monitor 对象，线程进入阻塞队列，依赖 OS 互斥量。</p>
             </article>
 
             <article class="article-content" id="cache-avalanche">
                 <h1>缓存雪崩、穿透、击穿的区别与解决方案</h1>
                 <div class="meta">Redis / 缓存 · 大厂高频</div>
-                <p><strong>三者区别：</strong>穿透（数据不存在，直打 DB）；击穿（热点 key 过期）；雪崩（大量 key 同时失效或 Redis 宕机）。</p>
-                <p><strong>穿透：</strong>网关参数校验；布隆过滤器（False 直接拦截）；缓存空对象（短 TTL）。</p>
-                <p><strong>击穿：</strong>SingleFlight 模式：ConcurrentHashMap+CompletableFuture，同 key 只有第一个线程查 DB，其余等待 Future.get() 复用结果。</p>
-                <p><strong>雪崩：</strong>随机 TTL（如 +0~20min Jitter）；多级缓存；限流熔断。</p>
+                <p><strong>三者区别：</strong>穿透（数据在缓存和 DB 都不存在，请求直打 DB，常见于非法 ID、恶意攻击）；击穿（热点 key 过期瞬间，大量并发同时打 DB）；雪崩（大量 key 同时失效或 Redis 宕机，请求集中打 DB）。</p>
+                <p><strong>穿透：</strong>① 网关层参数校验（非法 ID 直接拦截）；② 布隆过滤器：False 一定不存在直接返回，True 可能存在放行；③ 缓存空对象，短 TTL 避免缓存污染。新增/修改时同步更新布隆过滤器。</p>
+                <p><strong>击穿：</strong>SingleFlight：ConcurrentHashMap&lt;key, CompletableFuture&gt;，computeIfAbsent 保证同 key 只有第一个线程创建 Future 并查 DB，其余线程 get() 等待。Leader 查完回写 Redis 后 Future 完成，所有等待线程复用结果。</p>
+                <p><strong>雪崩：</strong>① 随机 TTL：过期时间 + random(0, 20min)，避免同时失效；② 多级缓存；③ 限流熔断；④ Redis 主从/集群高可用。</p>
             </article>
 
             <article class="article-content" id="redis-hotkey">
@@ -464,7 +459,7 @@
                 <p><strong>定义：</strong>某 Key 访问量远高于其他，如总 QPS 10000 时某 Key 达 7000，或对大 Hash/ZSet 频繁操作。</p>
                 <p><strong>危害：</strong>单节点网卡打满、缓存击穿、DB 雪崩、Redis Cluster 分片不均衡。</p>
                 <p><strong>发现：</strong>经验预测（秒杀商品 ID）；<code>redis-cli --hotkeys</code>；MONITOR+redis-faina 分析；客户端/代理层统计访问频率。</p>
-                <p><strong>解决：</strong>本地缓存分散请求；热 Key 拆分（key_001～key_015）；读写分离+从节点扩容；热 Key 永不过期+MQ 更新。</p>
+                <p><strong>解决：</strong>① 本地缓存（Guava/Caffeine）分散请求；② 热 Key 拆分：key_001～key_015 分散到不同节点，读写时随机选；③ 读写分离+从节点扩容；④ 热 Key 永不过期+MQ 异步更新。</p>
             </article>
 
             <article class="article-content" id="redis-rdb-aof">
@@ -503,10 +498,10 @@
                 <div class="meta">系统设计</div>
                 <p><strong>前端：</strong>按钮防重复点击、前端限流、静态资源 CDN。</p>
                 <p><strong>网关：</strong>限流（令牌桶/漏桶）、熔断、黑白名单。</p>
-                <p><strong>Redis：</strong>预减库存（DECR）、防超卖（Lua 原子判断）；库存预热；热点数据本地缓存。</p>
-                <p><strong>MQ：</strong>异步下单，请求进队列削峰，消费者控制 DB 写入速率。</p>
-                <p><strong>数据库：</strong>唯一索引（用户+商品）防重复下单；乐观锁/悲观锁防超卖；分库分表。</p>
-                <p><strong>其他：</strong>缓存预热、降级（核心功能优先）、监控告警。</p>
+                <p><strong>Redis：</strong>预减库存（DECR 原子操作）；防超卖 Lua 脚本原子判断库存；库存预热；热点数据本地缓存（Guava）吸收请求。</p>
+                <p><strong>MQ：</strong>异步下单，请求进队列削峰，消费者控制 DB 写入速率，避免 DB 被打崩。</p>
+                <p><strong>数据库：</strong>唯一索引（用户+商品）防重复下单；乐观锁（版本号）或悲观锁防超卖；分库分表应对高并发。</p>
+                <p><strong>其他：</strong>缓存预热、降级（非核心功能可降级）、监控告警。</p>
             </article>
 
             <article class="article-content" id="consistent-hash">
@@ -559,15 +554,15 @@
                 <div class="meta">Java / Spring · 大厂高频</div>
                 <p><strong>主要阶段：</strong></p>
                 <ol>
-                    <li>实例化（构造方法创建对象，分配内存）</li>
-                    <li>属性注入（@Autowired、setter 等）</li>
-                    <li>Aware 回调（BeanNameAware、BeanFactoryAware、ApplicationContextAware）</li>
+                    <li>实例化：根据 BeanDefinition 创建对象，分配内存。</li>
+                    <li>属性注入：@Autowired、setter、构造注入等。</li>
+                    <li>Aware 回调：BeanNameAware、BeanFactoryAware、ApplicationContextAware，可拿到容器对象。</li>
                     <li>BeanPostProcessor.postProcessBeforeInitialization</li>
                     <li>初始化：@PostConstruct → InitializingBean.afterPropertiesSet() → init-method</li>
                     <li>BeanPostProcessor.postProcessAfterInitialization（AOP 代理在此生成）</li>
                     <li>销毁：@PreDestroy → DisposableBean.destroy() → destroy-method</li>
                 </ol>
-                <p>BeanPostProcessor 是扩展点，可对每个 Bean 做前后处理。</p>
+                <p>实例化是分配内存，初始化是执行业务逻辑。BeanPostProcessor 是扩展点，可对每个 Bean 做前后处理。</p>
             </article>
 
             <article class="article-content" id="jvm-gc">
@@ -575,9 +570,9 @@
                 <div class="meta">Java / Spring · 大厂高频</div>
                 <p><strong>垃圾识别：</strong>可达性分析（从 GC Roots 出发，不可达即垃圾）。引用计数法有循环引用问题已废弃。</p>
                 <p><strong>GC Roots：</strong>栈中引用、静态变量、常量、JNI 引用。</p>
-                <p><strong>回收算法：</strong>标记-清除（有碎片）；复制（新生代 Eden+S0+S1）；标记-整理（老年代）。</p>
+                <p><strong>回收算法：</strong>标记-清除（有碎片）；复制（新生代 Eden+S0+S1，8:1:1）；标记-整理（老年代）。</p>
                 <p><strong>回收器：</strong>Serial/ParNew、Parallel、CMS（已废弃）、G1（JDK9+ 默认，分区）、ZGC（超低停顿）。</p>
-                <p><strong>分代：</strong>Minor GC（新生代）、Major/Full GC（老年代/整堆）。对象晋升：年龄达阈值或 S 区装不下。</p>
+                <p><strong>分代：</strong>Minor GC（新生代）、Major/Full GC（老年代/整堆）。对象晋升：年龄达阈值（默认 15）或 S 区装不下。</p>
             </article>
 
             <article class="article-content" id="thread-pool">
@@ -672,9 +667,9 @@
                 <h1>MySQL MVCC 可重复读实现原理</h1>
                 <div class="meta">数据库 · 大厂高频</div>
                 <p><strong>MVCC：</strong>多版本并发控制，InnoDB 实现可重复读，读写不阻塞。</p>
-                <p><strong>三大组件：</strong>隐藏字段（DB_TRX_ID、DB_ROLL_PTR）；Undo Log 版本链；Read View（m_ids、min_trx_id、max_trx_id、creator_trx_id）。</p>
-                <p><strong>可见性：</strong>TRX_ID==creator 可见；&lt;min 可见；&gt;=max 不可见；[min,max) 内看是否在 m_ids（未提交则不可见）。不可见则沿 ROLL_PTR 找上一版本。</p>
-                <p><strong>RR vs RC：</strong>RR 事务内首次读生成 Read View 并复用；RC 每次 SELECT 生成新 Read View。</p>
+                <p><strong>三大组件：</strong>① 隐藏字段：DB_TRX_ID（最近修改该行的事务 ID）、DB_ROLL_PTR（回滚指针，指向 Undo 链）、DB_ROW_ID（无主键时用）；② Undo Log：版本链，存历史版本；③ Read View：m_ids（活跃事务）、min_trx_id、max_trx_id、creator_trx_id。</p>
+                <p><strong>可见性：</strong>TRX_ID==creator 可见；&lt;min 可见（事务已提交）；&gt;=max 不可见；[min,max) 内：在 m_ids 则不可见（未提交），否则可见。不可见则沿 ROLL_PTR 找上一版本。</p>
+                <p><strong>RR vs RC：</strong>RR 事务内首次读生成 Read View 并复用，保证可重复读；RC 每次 SELECT 生成新 Read View，可读到其他事务已提交的数据。</p>
             </article>
 
             <article class="article-content" id="mysql-btree">
@@ -749,6 +744,22 @@
                 <h1>哈夫曼压缩</h1>
                 <div class="meta">情景题</div>
                 <p>① 扫描统计字符频率 freq[256]；② 小根堆建哈夫曼树：每次取两最小合并，直到剩一个；③ 根到叶左 0 右 1 得编码。</p>
+                <pre><code>// 建树
+PriorityQueue&lt;Node&gt; pq = new PriorityQueue&lt;&gt;((a,b)-&gt;a.freq-b.freq);
+for (int i = 0; i &lt; 256; i++)
+    if (freq[i] &gt; 0) pq.offer(new Node((char)i, freq[i]));
+while (pq.size() &gt; 1) {
+    Node a = pq.poll(), b = pq.poll();
+    pq.offer(new Node(a.freq + b.freq, a, b));
+}
+// 编码：DFS 左0右1，到叶子记录 code
+void encode(Node root, String path, Map&lt;Character,String&gt; codes) {
+    if (root.left == null && root.right == null) {
+        codes.put(root.ch, path); return;
+    }
+    encode(root.left, path + "0", codes);
+    encode(root.right, path + "1", codes);
+}</code></pre>
             </article>
 
             <article class="article-content" id="api-topk">
@@ -837,56 +848,179 @@
             <article class="article-content" id="n-diff-k">
                 <h1>构造 n 个数字差值为 k</h1>
                 <div class="meta">算法</div>
-                <p>给定 n、k，构造长度为 n 的数组，相邻元素差为 k。</p>
-                <p><strong>思路：</strong>等差数列 [0, k, 2k, ...] 或交替正负 [k, -k, k, -k, ...]。注意 k 为 0 或负数时的边界。</p>
+                <p>给定 n、k，构造长度为 n 的数组，使相邻元素差为 k。</p>
+                <p><strong>思路：</strong>① 等差数列：首项 0，公差 k；② 交替正负：k, -k, k, -k...。k=0 时全 0；k 为负时等价于正数序列取反。</p>
+                <pre><code>public int[] constructArray(int n, int k) {
+    int[] res = new int[n];
+    for (int i = 0; i &lt; n; i++) {
+        res[i] = i * k;  // 等差数列 [0, k, 2k, ...]
+    }
+    return res;
+}
+// 或交替：res[i] = (i % 2 == 0) ? (i/2 * k) : (-(i/2 + 1) * k);</code></pre>
             </article>
 
             <article class="article-content" id="binary-tree-path">
                 <h1>二叉树路径和</h1>
                 <div class="meta">算法 <span class="company-tag">某大厂二面</span></div>
-                <p>LeetCode 112/113：判断是否存在/找出所有路径和等于 target 的路径。</p>
-                <p><strong>思路：</strong>DFS(root, target - root.val)；到叶子且 target==0 则找到；回溯时恢复 path。注意空树、单节点。</p>
+                <p><strong>LeetCode 112：</strong>判断是否存在根到叶路径和等于 target。<strong>LeetCode 113：</strong>找出所有这样的路径。</p>
+                <p><strong>思路：</strong>DFS，每次传入剩余 target；到叶子时若 target==0 则找到。113 需维护 path 列表，回溯时恢复。</p>
+                <pre><code>// LeetCode 112 是否存在
+public boolean hasPathSum(TreeNode root, int target) {
+    if (root == null) return false;
+    if (root.left == null && root.right == null) return target == root.val;
+    return hasPathSum(root.left, target - root.val) 
+        || hasPathSum(root.right, target - root.val);
+}
+
+// LeetCode 113 找出所有路径
+List&lt;List&lt;Integer&gt;&gt; res = new ArrayList&lt;&gt;();
+List&lt;Integer&gt; path = new ArrayList&lt;&gt;();
+void dfs(TreeNode root, int target) {
+    if (root == null) return;
+    path.add(root.val);
+    if (root.left == null && root.right == null && target == root.val)
+        res.add(new ArrayList&lt;&gt;(path));
+    dfs(root.left, target - root.val);
+    dfs(root.right, target - root.val);
+    path.remove(path.size() - 1);  // 回溯
+}</code></pre>
             </article>
 
             <article class="article-content" id="remove-nth-node">
                 <h1>删除链表倒数第 N 个节点</h1>
                 <div class="meta">算法 · LeetCode 19</div>
-                <p><strong>双指针：</strong>快指针先走 n+1 步，然后快慢一起走，快指针到 null 时慢指针在待删节点前驱，删除 next 即可。</p>
-                <p>可能删除头节点，用 dummy 虚拟头简化。</p>
+                <p><strong>双指针：</strong>快指针先走 n+1 步，然后快慢一起走。快指针到 null 时，慢指针在待删节点的前驱。用 dummy 虚拟头统一处理删除头节点的情况。</p>
+                <pre><code>public ListNode removeNthFromEnd(ListNode head, int n) {
+    ListNode dummy = new ListNode(0, head);
+    ListNode fast = dummy, slow = dummy;
+    for (int i = 0; i &lt;= n; i++) fast = fast.next;  // 快指针先走 n+1 步
+    while (fast != null) {
+        fast = fast.next;
+        slow = slow.next;
+    }
+    slow.next = slow.next.next;
+    return dummy.next;
+}</code></pre>
             </article>
 
             <article class="article-content" id="lru">
                 <h1>LRU 缓存实现</h1>
                 <div class="meta">算法 · LeetCode 146</div>
-                <p><strong>LRU：</strong>最近最少使用，淘汰最久未访问的数据。</p>
-                <p><strong>结构：</strong>HashMap + 双向链表。HashMap 存 key→节点；链表头为最近使用，尾为最久未使用。</p>
-                <p><strong>get：</strong>查 HashMap，若存在则把节点移到链表头，再删原位置。</p>
-                <p><strong>put：</strong>若存在则更新并移到头；若不存在且满则删尾节点，再插入新节点到头。</p>
-                <p>双向链表便于 O(1) 删除任意节点（需前后驱）。</p>
+                <p><strong>LRU：</strong>最近最少使用，淘汰最久未访问的数据。HashMap 实现 O(1) 查找；双向链表维护访问顺序，头为最近、尾为最久。get/put 都要把访问的节点移到链表头。</p>
+                <pre><code>class LRUCache {
+    static class Node { int key, val; Node prev, next; Node(int k, int v) { key = k; val = v; } }
+    Map&lt;Integer, Node&gt; map;
+    Node head, tail;  // 虚拟头尾
+    int cap;
+    public LRUCache(int capacity) {
+        cap = capacity;
+        map = new HashMap&lt;&gt;();
+        head = new Node(0, 0); tail = new Node(0, 0);
+        head.next = tail; tail.prev = head;
+    }
+    public int get(int key) {
+        if (!map.containsKey(key)) return -1;
+        Node node = map.get(key);
+        remove(node); addFirst(node);
+        return node.val;
+    }
+    public void put(int key, int value) {
+        if (map.containsKey(key)) {
+            remove(map.get(key));
+        } else if (map.size() == cap) {
+            map.remove(tail.prev.key);
+            remove(tail.prev);
+        }
+        Node node = new Node(key, value);
+        map.put(key, node); addFirst(node);
+    }
+    void remove(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+    void addFirst(Node node) {
+        node.next = head.next; node.prev = head;
+        head.next.prev = node; head.next = node;
+    }
+}</code></pre>
             </article>
 
             <article class="article-content" id="reverse-list">
                 <h1>反转链表</h1>
                 <div class="meta">算法 · LeetCode 206</div>
-                <p>迭代：prev=null，cur=head；每次 next=cur.next，cur.next=prev，prev=cur，cur=next。递归：reverse(head.next)，head.next.next=head，head.next=null。</p>
+                <p><strong>迭代：</strong> prev=null，cur=head；每次 next=cur.next，cur.next=prev，prev=cur，cur=next。<strong>递归：</strong>先反转 head.next，再把 head 接到反转后链表的尾部。</p>
+                <pre><code>// 迭代 O(n) 时间 O(1) 空间
+public ListNode reverseList(ListNode head) {
+    ListNode prev = null;
+    while (head != null) {
+        ListNode next = head.next;
+        head.next = prev;
+        prev = head;
+        head = next;
+    }
+    return prev;
+}
+
+// 递归
+public ListNode reverseList(ListNode head) {
+    if (head == null || head.next == null) return head;
+    ListNode newHead = reverseList(head.next);
+    head.next.next = head;
+    head.next = null;
+    return newHead;
+}</code></pre>
             </article>
 
             <article class="article-content" id="lca">
                 <h1>二叉树最近公共祖先</h1>
                 <div class="meta">算法 · LeetCode 236</div>
-                <p>后序遍历。若 root 为 null 或 p 或 q 则返回 root。左右递归得 left、right。left 和 right 都非空则 root 为 LCA；否则返回非空的那边。</p>
+                <p>后序遍历。若 root 为 null 或等于 p 或 q，直接返回 root。递归左右得 left、right。若 left 和 right 都非空，说明 p、q 在 root 两侧，root 即为 LCA；否则返回非空的那一侧（p、q 在同侧）。</p>
+                <pre><code>public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+    if (root == null || root == p || root == q) return root;
+    TreeNode left = lowestCommonAncestor(root.left, p, q);
+    TreeNode right = lowestCommonAncestor(root.right, p, q);
+    if (left != null && right != null) return root;  // p、q 在两侧
+    return left != null ? left : right;  // 在同侧，返回非空
+}</code></pre>
             </article>
 
             <article class="article-content" id="lis">
                 <h1>最长递增子序列</h1>
                 <div class="meta">算法 · LeetCode 300</div>
-                <p>DP：dp[i]=以 nums[i] 结尾的 LIS 长度，dp[i]=max(dp[j]+1) for j&lt;i and nums[j]&lt;nums[i]。O(n²)。贪心+二分：维护单调递增的 tail 数组，二分找第一个≥当前值的位置替换，长度即答案。O(nlogn)。</p>
+                <p><strong>DP：</strong>dp[i]=以 nums[i] 结尾的 LIS 长度，dp[i]=max(dp[j]+1) for j&lt;i 且 nums[j]&lt;nums[i]。O(n²)。</p>
+                <p><strong>贪心+二分：</strong>维护 tail[i]=长度为 i+1 的 LIS 的最小末尾元素。遍历时二分找第一个≥当前值的位置替换，长度即答案。O(nlogn)。</p>
+                <pre><code>// 贪心+二分 O(nlogn)
+public int lengthOfLIS(int[] nums) {
+    int[] tail = new int[nums.length];
+    int len = 0;
+    for (int x : nums) {
+        int left = 0, right = len;
+        while (left &lt; right) {
+            int mid = (left + right) / 2;
+            if (tail[mid] &lt; x) left = mid + 1;
+            else right = mid;
+        }
+        tail[left] = x;
+        if (left == len) len++;
+    }
+    return len;
+}</code></pre>
             </article>
 
             <article class="article-content" id="invert-tree">
                 <h1>翻转二叉树</h1>
                 <div class="meta">算法 · LeetCode 226</div>
-                <p>递归：swap(root.left, root.right)，再递归翻转 left 和 right。可前序或后序。</p>
+                <p>递归交换左右子树，再递归翻转左右子树。前序或后序均可。</p>
+                <pre><code>public TreeNode invertTree(TreeNode root) {
+    if (root == null) return null;
+    TreeNode tmp = root.left;
+    root.left = root.right;
+    root.right = tmp;
+    invertTree(root.left);
+    invertTree(root.right);
+    return root;
+}</code></pre>
             </article>
 
             <article class="article-content" id="basics-summary">
