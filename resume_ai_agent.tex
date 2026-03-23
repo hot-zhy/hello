@@ -1,0 +1,126 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[UTF8]{ctex}
+\usepackage[left=0.4in, right=0.4in, top=0.3in, bottom=0.25in]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{fontawesome5}
+
+\definecolor{primary}{HTML}{1A1A2E}
+\definecolor{accent}{HTML}{16213E}
+\definecolor{linkblue}{HTML}{0F3460}
+
+\hypersetup{colorlinks=true, urlcolor=linkblue}
+
+\pagestyle{empty}
+
+\titleformat{\section}
+  {\normalsize\bfseries\color{primary}}
+  {}{0em}{}
+  [\vspace{-0.7em}\textcolor{accent}{\rule{\textwidth}{1pt}}]
+
+\titlespacing*{\section}{0pt}{0.4em}{0.15em}
+
+\setlist[itemize]{leftmargin=1.2em, itemsep=0pt, parsep=0pt, topsep=1pt}
+
+\newcommand{\expentry}[4]{%
+  \noindent\textbf{#1} \hfill #4 \\[-3pt]
+  \textit{#3} \hfill \textit{#2} \vspace{0pt}
+}
+
+\begin{document}
+
+% ==================== Header ====================
+\begin{center}
+  {\Large\bfseries 赵晗瑜 \;|\; Hanyu Zhao} \\[4pt]
+  {\small
+    \faPhone\ 19933153268 \quad
+    \faEnvelope\ zhy19933153268@163.com \quad
+    求职意向：\textbf{AI Agent 算法/开发工程师}
+  }
+\end{center}
+
+\vspace{-8pt}
+
+% ==================== Education ====================
+\section{教育背景}
+
+\noindent\textbf{华东师范大学} · 软件工程 · 硕士（预计 2027 年毕业）\hfill 2024.09 -- 至今 \\[-2pt]
+{\small 研究方向：智能教育（AI4Edu） | 一区 Top 期刊论文已 Accept | GPA: 3.87/4.0（前 5\%）}
+
+\vspace{1pt}
+
+\noindent\textbf{华东师范大学} · 软件工程 · 本科 \hfill 2020.09 -- 2024.07 \\[-2pt]
+{\small 上海市优秀毕业生 | 特等奖学金$\times$2 | AAAI 2024 全球数学推理竞赛第二名 | AIGC 高校计算机设计大赛国二 | CET-6 · 雅思 6.0}
+
+% ==================== Internship ====================
+\section{实习经历}
+
+\expentry{英伟达（NVIDIA） · AI 工具平台开发}{上海}{NVPunish Web UI：GPU 多任务压测编排与可视化平台}{2025.12 -- 2026.03}
+\begin{itemize}
+  \item 设计多机多 Job 执行流 Gantt 图，展示 Agent 式任务调度的时序与状态流转；基于 Plotly 实现交互式视图与约 10s 级自动刷新
+  \item Django 后端开发 10+ RESTful API，覆盖测试管理、报告聚合与部署全链路；GitLab CI 跨平台自动化构建与一键部署
+\end{itemize}
+
+\vspace{1pt}
+
+\expentry{喜马拉雅 · Agent 开发}{上海}{智慧大师：多 Agent 智能陪伴与建议系统（主 App 级产品）}{2025.09 -- 2025.12}
+\begin{itemize}
+  \item \textbf{ReAct 多 Agent 编排}：基于 Dify 设计 Reasoning-Acting 循环驱动的多 Agent 工作流（画像抽取 $\to$ 记忆管理 $\to$ 推荐）；Mem0 构建跨会话长期记忆（Episodic/Semantic），Context 持久化与动态注入
+  \item \textbf{MCP + A2A Tool Use}：MCP 标准化接入多源工具，Agent 间消息总线协作；RabbitMQ 异步化削峰填谷
+  \item \textbf{Agentic RAG}：画像/记忆语义向量化落地 Milvus，Agent 自主决策召回策略（ANN/过滤/重排），聚类实现兴趣分群
+\end{itemize}
+
+\vspace{1pt}
+
+\expentry{上海智能教育研究院 · LLM 应用开发}{上海}{小花狮：智能作文辅导 Agent 系统（10,000+ 用户）}{2025.04 -- 2025.08}
+\begin{itemize}
+  \item \textbf{Reflection 范式}：Generate $\to$ Critique $\to$ Refine 自我反思闭环；RabbitMQ 异步解耦，Redisson 分布式锁保障幂等
+  \item \textbf{Agent 性能评估}：设计评分一致性/建议采纳率等指标体系；事件驱动看板，P99 < 100ms，峰值 QPS 2,000+
+\end{itemize}
+
+\vspace{1pt}
+
+\expentry{上海人工智能创新中心 · LLM 应用开发}{上海}{科研助手 Agent：Event-Driven 思维导图生成服务}{2024.11 -- 2025.04}
+\begin{itemize}
+  \item \textbf{Plan-and-Solve 范式}：Agent 先规划再执行，两阶段结构化输出生成思维导图；Redis Stream + SSE 流式推送与断点续传
+\end{itemize}
+
+\vspace{1pt}
+
+\expentry{易保网络技术（EBaoTech） · 大模型算法}{上海}{NL$\to$Rego 策略生成 Agent 与评测体系}{2024.02 -- 2024.06}
+\begin{itemize}
+  \item 构建 NL $\to$ Rego 端到端 ReAct Agent；PyTorch LoRA/PEFT 微调 + Benchmark 评测（语法正确率/语义匹配度）迭代闭环
+\end{itemize}
+
+% ==================== Research ====================
+\section{科研经历}
+
+\noindent\textbf{SageJavon: An AI-Powered Tutor for Programming Education} \hfill 一区 Top 期刊已 Accept \\[2pt]
+{\small 提出基于``Learn-Practice-Evaluate-Support''框架的 AI 编程辅导系统，核心创新点：}
+\begin{itemize}
+  \item \textbf{Agentic RAG + 启发式追问}：改进 RAG 框架支持教师自定义课件检索，结合启发式逐步追问引导学生计算思维
+  \item \textbf{图知识追踪 + 自适应推荐}：图结构建模学生知识状态，驱动个性化习题推荐；提出 FUPS-Score 自动代码评估框架
+  \item \textbf{真实课堂部署验证}：实际教学场景部署，认知负荷更低、知识迁移更优、学生满意度达 84\%
+\end{itemize}
+
+% ==================== Projects ====================
+\section{项目经历}
+
+\expentry{LLM 数学推理 Agent（全球第二名）}{AAAI 2024 全球竞赛}{Context Engineering + Tool Use + 多专家 Agent 集成}{2023.10 -- 2024.01}
+\begin{itemize}
+  \item \textbf{Context Engineering}：K-Means 聚类题目类型，为每类动态选择最优 Few-shot 样例注入 Context，CoT 引导推理
+  \item \textbf{Tool Use + 多模型投票}：PAL 让 Agent 自主生成代码辅助计算；LoRA 微调 ChatGLM 训练多个专家子 Agent，投票融合
+\end{itemize}
+
+% ==================== Skills ====================
+\section{核心技能}
+
+{\small
+\noindent\textbf{Agent 范式/框架：}ReAct、Plan-and-Solve、Reflection、Agentic Workflow、MCP/A2A 协议、Dify、Coze、Mem0、Agentic RAG \\[1pt]
+\textbf{LLM/算法：}Context Engineering、CoT、LoRA/PEFT、Agent 评估与基准测试、Milvus ANN、知识追踪、多模型集成 \\[1pt]
+\textbf{工程化：}Python / Java / Go、Spring Boot、Django、Flask、Redis、RabbitMQ、Docker / K8s、微服务、GitLab CI
+}
+
+\end{document}
