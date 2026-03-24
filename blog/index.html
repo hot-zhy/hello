@@ -387,14 +387,14 @@
 
             <div class="toc-category" data-tag="mock">
                 <div class="sidebar-title">技术面试模拟 · 项目拷打</div>
-                <a href="#" class="toc-item" data-id="sim-mem0">喜马拉雅：Mem0 与用户画像</a>
-                <a href="#" class="toc-item" data-id="sim-zhihui">喜马拉雅：智慧大师架构与 Dify</a>
-                <a href="#" class="toc-item" data-id="sim-rabbitmq">喜马拉雅：RabbitMQ 链路稳定性</a>
-                <a href="#" class="toc-item" data-id="sim-milvus">喜马拉雅：Milvus 向量召回</a>
+                <a href="#" class="toc-item" data-id="sim-mem0">某互联网公司：Mem0 与用户画像</a>
+                <a href="#" class="toc-item" data-id="sim-zhihui">某互联网公司：智慧大师架构与 Dify</a>
+                <a href="#" class="toc-item" data-id="sim-rabbitmq">某互联网公司：RabbitMQ 链路稳定性</a>
+                <a href="#" class="toc-item" data-id="sim-milvus">某互联网公司：Milvus 向量召回</a>
                 <a href="#" class="toc-item" data-id="sim-xiaohuashi">小花狮：高并发混合 AI 架构</a>
                 <a href="#" class="toc-item" data-id="sim-keyan">科研助手：Redis Stream + SSE</a>
                 <a href="#" class="toc-item" data-id="sim-nvpunish">NVPunish：Django 与 SQLite 优化</a>
-                <a href="#" class="toc-item" data-id="sim-rego">易保：Rego 策略生成系统</a>
+                <a href="#" class="toc-item" data-id="sim-rego">某公司：Rego 策略生成系统</a>
             </div>
 
             <div class="toc-category" data-tag="mock">
@@ -406,13 +406,13 @@
 
             <div class="toc-category" data-tag="mock">
                 <div class="sidebar-title">技术面试模拟 · 大厂专项</div>
-                <a href="#" class="toc-item" data-id="sim-byte">字节：线程池/redo/零拷贝/ThreadLocal</a>
-                <a href="#" class="toc-item" data-id="sim-mihoyo">米哈游：C++/TCP/排行榜设计</a>
+                <a href="#" class="toc-item" data-id="sim-byte">大厂A：线程池/redo/零拷贝/ThreadLocal</a>
+                <a href="#" class="toc-item" data-id="sim-mihoyo">大厂B：C++/TCP/排行榜设计</a>
             </div>
 
             <div class="toc-category" data-tag="mock">
                 <div class="sidebar-title">技术面试模拟 · 公司流程</div>
-                <a href="#" class="toc-item" data-id="sim-flow">字节/米哈游/腾讯面试流程</a>
+                <a href="#" class="toc-item" data-id="sim-flow">大厂面试流程汇总</a>
             </div>
         </aside>
 
@@ -420,11 +420,11 @@
         <main class="reader">
             <div class="reader-welcome" id="welcome">
                 <h2>面经 / 面试准备</h2>
-                <p>从左侧目录选择题目，右侧查看答案。面向字节广告/米哈游游戏服务端/腾讯后台，基于简历定制 + 牛客/CSDN/掘金大厂面经。含：</p>
+                <p>从左侧目录选择题目，右侧查看答案。面向大厂后端/游戏服务端，基于简历定制 + 牛客/CSDN/掘金大厂面经。含：</p>
                 <ul style="margin-top:0.5rem;">
                     <li><strong>基础八股：</strong>计算机网络、操作系统、Redis、MySQL、Java、Spring、JVM 等</li>
                     <li><strong>AI Agent 面经：</strong>Agent 核心组件、ReAct、规划、记忆、RAG 进阶、多智能体、RLHF、MoE 等（来源：<a href="https://datawhalechina.github.io/hello-agents/" style="color:var(--accent-cyan)">Hello-Agents</a>）</li>
-                    <li><strong>技术面试模拟：</strong>项目深度拷打（喜马拉雅/小花狮/科研助手/NVPunish等）、八股详解、字节/米哈游专项、公司流程</li>
+                    <li><strong>技术面试模拟：</strong>项目深度拷打（小花狮/科研助手等）、八股详解、大厂专项、公司流程</li>
                     <li><strong>系统设计、算法、运维排查、简历追问</strong></li>
                 </ul>
                 <p style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-muted);">💡 使用左侧标签筛选快速定位分类</p>
@@ -1543,7 +1543,7 @@ public int lengthOfLIS(int[] nums) {
 
             <!-- 技术面试模拟 · 项目拷打 -->
             <article class="article-content" id="sim-mem0">
-                <h1>喜马拉雅：Mem0 与用户画像</h1>
+                <h1>某互联网公司：Mem0 与用户画像</h1>
                 <div class="meta">技术面试模拟 · 智慧大师</div>
                 <p><strong>Mem0 的作用：</strong>智慧大师是具备长期记忆的 AI 陪伴产品。用户与 AI 持续对话后，需把对话里提取的「用户画像」（偏好、主题、关键事件）存下来作为长期记忆。Mem0 即存这些记忆的底座：① 异步链路做特征抽取；② 抽取结果写入 Mem0；③ 同时向量化写入 Milvus；④ 下次提问时从 Mem0/Milvus 拉取相关记忆注入 Prompt。</p>
                 <p><strong>为何选 Mem0 而非 MySQL：</strong>Mem0 专为 LLM 记忆设计，支持按 user_id 组织、语义去重与合并、时间衰减。用 MySQL 需自建向量索引、自研去重与衰减，成本高。Mem0 与 Milvus 配合，分工清晰。</p>
@@ -1551,7 +1551,7 @@ public int lengthOfLIS(int[] nums) {
             </article>
 
             <article class="article-content" id="sim-zhihui">
-                <h1>喜马拉雅：智慧大师架构与 Dify</h1>
+                <h1>某互联网公司：智慧大师架构与 Dify</h1>
                 <div class="meta">技术面试模拟 · 智慧大师</div>
                 <p><strong>整体架构：</strong>用户 → API Gateway → 对话服务 → Dify Agent（带 MCP 工具）→ Agent 从 Mem0/MCP 拉取画像 → 向量召回 → 注入 Prompt → LLM 生成回复。异步链路：对话服务投递 MQ → 消费者调 Dify 工作流做特征抽取 → 写 Mem0 → 向量化写 Milvus。</p>
                 <p><strong>Dify 工作流角色：</strong>特征抽取拆成多节点：输入(user_id, message) → LLM 节点（提取偏好/主题/事件）→ 条件分支 → 输出结构化 JSON。与主对话链路解耦，主链路用 Agent 对话，异步用工作流抽取。</p>
@@ -1559,7 +1559,7 @@ public int lengthOfLIS(int[] nums) {
             </article>
 
             <article class="article-content" id="sim-rabbitmq">
-                <h1>喜马拉雅：RabbitMQ 链路稳定性</h1>
+                <h1>某互联网公司：RabbitMQ 链路稳定性</h1>
                 <div class="meta">技术面试模拟 · 智慧大师</div>
                 <p><strong>异步化链路：</strong>同步：用户请求 → 对话服务 → Dify Agent（拉画像）→ LLM 生成 → 返回。异步：主链路返回前投递 <code>{user_id, session_id, message}</code> 到 RabbitMQ，立即返回；消费者拉取后调 Dify 工作流抽取 → 写 Mem0 → Embedding 写 Milvus。画像更新允许秒级延迟。</p>
                 <p><strong>失败与堆积：</strong>① 重试：消费失败不 requeue，而是投递到延迟队列，指数退避（1s、2s、4s…）再重试；② 死信队列 DLX：重试 N 次仍失败进死信，落库审计、人工排查后批量重放；③ 监控：队列深度、消费速率、消费延迟、死信数量；堆积超阈值告警，可扩容消费者或限流生产端。</p>
@@ -1567,7 +1567,7 @@ public int lengthOfLIS(int[] nums) {
             </article>
 
             <article class="article-content" id="sim-milvus">
-                <h1>喜马拉雅：Milvus 向量召回</h1>
+                <h1>某互联网公司：Milvus 向量召回</h1>
                 <div class="meta">技术面试模拟 · 智慧大师</div>
                 <p><strong>ANN vs 精确：</strong>精确遍历 O(n) 百万级需秒级；ANN 通过索引近似搜索，O(log n) 级，召回率 95%+，延迟 &lt;10ms。召回场景选 ANN：数据量大、延迟敏感、下游有精排/LLM 兜底。</p>
                 <p><strong>Milvus 索引：</strong>IVF_FLAT 精度高、内存大，适合百万级；IVF_SQ8 量化省内存；HNSW 查询快、适合高维。选型：百万级用 IVF_FLAT/SQ8；千万级或 &lt;5ms 用 HNSW。可加 scalar 过滤（如 user_id）缩小搜索空间。</p>
@@ -1592,15 +1592,15 @@ public int lengthOfLIS(int[] nums) {
 
             <article class="article-content" id="sim-nvpunish">
                 <h1>NVPunish：Django 与 SQLite 优化</h1>
-                <div class="meta">技术面试模拟 · 英伟达</div>
+                <div class="meta">技术面试模拟 · 某科技公司</div>
                 <p><strong>技术选型：</strong>Django 适合内部工具——Admin、ORM、认证开箱即用；SQLite 为 NVPunish 框架侧本地存储，无需独立 DB；Plotly Gantt 展示 Job 时间线。</p>
                 <p><strong>SQLite 加载优化：</strong>核心思路——请求路径不直接读 SQLite。方案一（推荐）：定时任务后台读 SQLite、聚合写 Redis/MySQL，API 只查缓存，首屏几十 ms。方案二（必须读文件时）：建索引、只查必要列、WAL 模式、首屏与详情分离（懒加载）。</p>
                 <p><strong>多机多 Job：</strong>Job 表存 dut_id、status、config；Execution 表存 event_type、timestamp、metrics。定时任务读各机 SQLite 或中心汇总，更新 Redis；前端 10s 轮询或 WebSocket 订阅。</p>
             </article>
 
             <article class="article-content" id="sim-rego">
-                <h1>易保：Rego 策略生成系统</h1>
-                <div class="meta">技术面试模拟 · 易保</div>
+                <h1>某公司：Rego 策略生成系统</h1>
+                <div class="meta">技术面试模拟 · 某公司</div>
                 <p><strong>Rego 与场景：</strong>OPA 的策略语言，声明式，用于 RBAC、合规、保单规则等。输入输出均 JSON。</p>
                 <p><strong>NL→Rego 链路：</strong>端到端：LLM 直接生成 → OPA parse 校验 → 失败则重试（带错误反馈）。分步：NL → 意图解析 → 结构化 JSON → 模板填充。混合：简单用模板，复杂用 LLM。</p>
                 <p><strong>语料与评估：</strong>从历史策略、文档抽取 (NL, Rego) 对；人工标注；格式约束输出 JSON。评估：语法正确率（OPA parse）、语义一致性（执行结果对比）、A/B 测试。兜底：OPA 报错反馈给 LLM 重试；正则修复常见错误。</p>
@@ -1635,8 +1635,8 @@ public int lengthOfLIS(int[] nums) {
 
             <!-- 技术面试模拟 · 大厂专项 -->
             <article class="article-content" id="sim-byte">
-                <h1>字节专项：线程池 / redo / 零拷贝 / ThreadLocal</h1>
-                <div class="meta">技术面试模拟 · 字节</div>
+                <h1>大厂A专项：线程池 / redo / 零拷贝 / ThreadLocal</h1>
+                <div class="meta">技术面试模拟 · 大厂A</div>
                 <p><strong>线程池：</strong>核心参数 core/max/队列/拒绝策略。流程：先核心→入队→队列满则扩容到 max→拒绝。必须用有界队列，Executors 无界易 OOM。submit 异常在 Future 中，不 get() 会吞掉。</p>
                 <p><strong>redo/undo：</strong>redo 保证持久性，WAL 先写 redo 再写数据页；undo 保证原子性、支持 MVCC，存旧值用于回滚和版本链。</p>
                 <p><strong>零拷贝：</strong>sendfile 省用户态拷贝，mmap 映射到用户空间。DMA 让外设直连内存。Kafka 用 sendfile 提升吞吐。</p>
@@ -1644,8 +1644,8 @@ public int lengthOfLIS(int[] nums) {
             </article>
 
             <article class="article-content" id="sim-mihoyo">
-                <h1>米哈游专项：C++ / TCP / 排行榜设计</h1>
-                <div class="meta">技术面试模拟 · 米哈游</div>
+                <h1>大厂B专项：C++ / TCP / 排行榜设计</h1>
+                <div class="meta">技术面试模拟 · 大厂B</div>
                 <p><strong>C++ 引用 vs 指针：</strong>引用必须初始化、不能为空、不能改绑；指针可为空、可改。虚函数：vtable+vptr，多态通过查表跳转。</p>
                 <p><strong>TCP keep-alive vs HTTP keep-alive：</strong>TCP 是传输层探测连接存活；HTTP 是复用同一 TCP 连接发多个请求。半连接：SYN 发出未收到 SYN+ACK；全连接：三次握手完成。</p>
                 <p><strong>排行榜设计：</strong>Redis ZSet，score 为战力。每小时刷新可批量 ZADD；实时更新则写时更新 ZSet。历史快照：定时存 ZSet 到 <code>rank:snapshot:日期</code>。主线程+工作线程：排行榜更新放工作线程，主线程不阻塞。</p>
@@ -1653,11 +1653,11 @@ public int lengthOfLIS(int[] nums) {
 
             <!-- 技术面试模拟 · 公司流程 -->
             <article class="article-content" id="sim-flow">
-                <h1>字节 / 米哈游 / 腾讯面试流程</h1>
+                <h1>大厂面试流程汇总</h1>
                 <div class="meta">技术面试模拟 · 公司流程</div>
-                <p><strong>字节：</strong>3–4 轮技术 + HR，约 1–2 周。一面算法+缓存/DB/MQ；二面网络、源码、场景题；三面项目深度+系统设计。八股重点：线程池、redo/undo、零拷贝、死锁/ThreadLocal、缓存一致性。</p>
-                <p><strong>米哈游：</strong>2–3 轮技术 + 未来领导 + HR。重点：C++（虚函数、引用指针、智能指针）、epoll LT/ET、TCP/HTTP keep-alive、进程间通信、MySQL MVCC/索引。特色：排行榜设计、主线程+工作线程、游戏网络同步。</p>
-                <p><strong>腾讯：</strong>3–4 轮，一周内可完成。一面数据结构、网络、Redis、语言；二面项目+深度八股；三面系统设计、问题定位、操作系统。</p>
+                <p><strong>大厂A（广告/推荐方向）：</strong>3–4 轮技术 + HR，约 1–2 周。一面算法+缓存/DB/MQ；二面网络、源码、场景题；三面项目深度+系统设计。八股重点：线程池、redo/undo、零拷贝、死锁/ThreadLocal、缓存一致性。</p>
+                <p><strong>大厂B（游戏服务端）：</strong>2–3 轮技术 + 未来领导 + HR。重点：C++（虚函数、引用指针、智能指针）、epoll LT/ET、TCP/HTTP keep-alive、进程间通信、MySQL MVCC/索引。特色：排行榜设计、主线程+工作线程、游戏网络同步。</p>
+                <p><strong>大厂C（后台开发）：</strong>3–4 轮，一周内可完成。一面数据结构、网络、Redis、语言；二面项目+深度八股；三面系统设计、问题定位、操作系统。</p>
             </article>
             <!-- AI Agent 面经 -->
             <article class="article-content" id="agent-definition">
