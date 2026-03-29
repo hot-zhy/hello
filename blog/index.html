@@ -6,11 +6,11 @@
     <title>面经 / 面试准备</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
     <style>
         :root {
-            --font-body: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-            --font-title: "Noto Serif SC", "Noto Sans SC", "PingFang SC", serif;
+            --font-body: "ZCOOL XiaoWei", "PingFang SC", "Microsoft YaHei", serif;
+            --font-title: "ZCOOL XiaoWei", "PingFang SC", "Microsoft YaHei", serif;
             --bg-dark: #0a0a0f;
             --bg-card: rgba(15, 15, 25, 0.9);
             --accent-cyan: #00f5ff;
@@ -3386,6 +3386,59 @@ chunks = splitter.split_text(document_text)</code></pre>
                     <li>你线上出过什么事故？如果现在再来一次你会怎么设计防线？</li>
                 </ul>
                 <p><strong>来源：</strong> <a href="https://www.nowcoder.com/discuss/752187770059173888" target="_blank" rel="noopener noreferrer">腾讯面试全流程（已 Offer，牛客）</a>、<a href="https://www.nowcoder.com/feed/main/detail/149c1331fa15424aa7d5e61921f89e32" target="_blank" rel="noopener noreferrer">腾讯暑期实习后台开发凉经（牛客）</a></p>
+
+                <p><strong>D 组：腾讯 TEG（暑期实习）一面 3.6 电话面（30min）</strong></p>
+                <ul>
+                    <li>inline 和 define 的区别</li>
+                    <li>动态库与静态库</li>
+                    <li>红黑树</li>
+                    <li>函数调用栈和普通 stack 的区别</li>
+                    <li>内存溢出、智能指针</li>
+                    <li>僵尸进程及其坏处</li>
+                    <li>Calldown 异常调试</li>
+                    <li>Makefile 文件</li>
+                    <li>创建进程时 fork() 返回什么</li>
+                    <li>GDB 调试是否熟悉</li>
+                    <li>grep 指令、netstat 查看端口占用</li>
+                    <li>怎么进入内核态</li>
+                    <li>C 语言 static 函数作用</li>
+                    <li>Linux 查看端口占用</li>
+                </ul>
+                <p><strong>算法：</strong>10 亿整数找出最大 100。</p>
+                <p><strong>评价：</strong>面试官不让自我介绍直接开问，C/C++ 底层占比很高，若底层不扎实会被快速拉开差距。</p>
+
+                <p><strong>E 组：腾讯 PCG（暑期实习）一面 3.7 电话面转牛客（30min）</strong></p>
+                <ul>
+                    <li>static 作用</li>
+                    <li>malloc 和 new 的区别</li>
+                    <li>inline 作用，和 define 的区别</li>
+                    <li>快排（最差情况、复杂度）</li>
+                    <li>Linux 用得多吗</li>
+                    <li>平时怎么调试程序</li>
+                    <li>C++ 多态</li>
+                </ul>
+                <p><strong>算法：</strong>删除字符串空格；36 辆车、6 跑道，求前三名最少比赛次数。</p>
+                <p><strong>来源：</strong>作者：超越护体，<a href="https://www.nowcoder.com/discuss/353156266354745344?sourceSSR=search" target="_blank" rel="noopener noreferrer">牛客原帖链接</a></p>
+
+                <p><strong>F 组：腾讯 TEG 后台开发（10.12）</strong></p>
+                <p><strong>面试流程：</strong>电话面，节奏快、连续追问；很多问题停留时间短，说不出来就直接切下一个。</p>
+                <ul>
+                    <li>自我介绍；读研研究方向（专硕，跟导师做项目）</li>
+                    <li>熟悉哪些大数据框架（Spark、Hadoop 等）</li>
+                    <li>CDH 体系下 Hadoop 使用：HDFS / MapReduce / YARN</li>
+                    <li>Spark 熟悉模块（Spark Core / Spark SQL），是否看过源码（追问 shuffle 过程）</li>
+                    <li>Spark SQL 和传统数据库做分析的区别（单机瓶颈 vs 分布式并行）</li>
+                    <li>Hadoop 存储冗余与不丢数据（HDFS 多副本、DataNode 异常、NameNode 元数据）</li>
+                    <li>新服务器加入集群后的文件写入与扩容副本补齐</li>
+                    <li>shuffle 网络传输流量开销如何检测（追问较深）</li>
+                    <li>Java 背景追问：HashMap 结构、GC 机制、类加载过程、双亲委派、类加载器类型、是否写过自定义加载器</li>
+                    <li>多线程与多进程区别</li>
+                    <li>Linux 常用排查：top、fdisk、iostat、/proc/cpuinfo、端口/资源观察</li>
+                    <li>机械硬盘随机读写为何显著慢于顺序读写（寻道、预读命中、文件系统开销）</li>
+                    <li>MySQL、Hive、Redis 的区别与联系</li>
+                </ul>
+                <p><strong>结果与复盘：</strong>面后状态一度进入“复试待安排”，但后续因时间安排与面试机会衔接问题未继续推进。该场面试特点是“高频连续提问 + 宽覆盖 + 快切题”，对知识面完整性和临场反应要求很高。</p>
+                <p><strong>来源：</strong>作者：提灯寻梦在南国，<a href="https://www.nowcoder.com/discuss/353155779471548416?sourceSSR=search" target="_blank" rel="noopener noreferrer">牛客原帖链接</a></p>
 
                 <p><strong>面试追问（你可直接背）：</strong>“你这里说的是方法论，能不能落到你自己项目的一个真实 case？”<br><strong>建议答法：</strong>一定用“场景-动作-结果”三段式：问题是什么、你具体改了什么、指标提升了多少。没有量化就很容易被判定为“参与过但不深”。</p>
             </article>
