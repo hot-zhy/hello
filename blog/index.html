@@ -3966,39 +3966,196 @@ int main() {
 
             <article class="article-content" id="tencent-nowcoder-server">
                 <h1>腾讯面经 QA（服务端 / 并发 / 网络编程）</h1>
-                <div class="meta">Reactor、守护进程、协程、TCP 细节、手撕算法 · 完整版</div>
-                <p><strong>Q1：Reactor 模式是什么？你实现的服务器架构怎么说？</strong><br><strong>A：</strong>Reactor 是“有人来事件我再处理”，核心是 IO 多路复用 + 事件分发。常见结构：`Acceptor` 收连接，`Reactor` 监听可读可写，业务线程池处理逻辑。<br><strong>例子：</strong>聊天服务器中，一个线程就能监控成千上万个 socket 是否可读。<br><strong>延展：</strong>要补连接生命周期管理（超时踢除、心跳、背压），这才像真实工程。</p>
-                <p><strong>Q2：read 系统调用常见错误有哪些？</strong><br><strong>A：</strong>`EINTR`（被信号打断，可重试）、`EAGAIN`（非阻塞下暂时无数据）、`ECONNRESET`（连接被对端重置）。<br><strong>例子：</strong>非阻塞 socket `read` 返回 `EAGAIN` 不是故障，只是“现在没数据”。<br><strong>延展：</strong>面试可说“不同错误走不同策略”，别统一死循环重试。</p>
-                <p><strong>Q3：对关闭 socket 写会发生什么？</strong><br><strong>A：</strong>通常写失败并返回 `EPIPE`，还可能触发 `SIGPIPE`，默认会让进程退出。<br><strong>例子：</strong>线上服务偶发崩溃，根因是没屏蔽 `SIGPIPE`。<br><strong>延展：</strong>工程里常忽略 `SIGPIPE` 或使用 `MSG_NOSIGNAL`。</p>
-                <p><strong>Q4：守护进程是什么？如何实现？</strong><br><strong>A：</strong>守护进程是后台长期运行且不依赖终端的进程。常见步骤：`fork`、`setsid`、可选二次 `fork`、改工作目录、设置 `umask`、重定向标准输入输出。<br><strong>例子：</strong>日志采集程序、监控代理通常以守护进程方式运行。<br><strong>延展：</strong>现代 Linux 常交给 systemd 托管，重启与日志管理更标准。</p>
-                <p><strong>Q5：gevent 是什么，协程何时切换？</strong><br><strong>A：</strong>gevent 是 Python 协程库，属于协作式调度，通常在 IO 等待点切换。<br><strong>例子：</strong>请求数据库时当前协程挂起，CPU 去跑别的协程。<br><strong>延展：</strong>CPU 密集任务不适合 gevent，要配合多进程或线程池。</p>
-                <p><strong>Q6：如何实现协程自动切换？</strong><br><strong>A：</strong>核心是“非阻塞 IO + 事件循环 + 调度器”。IO 未就绪就挂起协程，IO 就绪再恢复。<br><strong>例子：</strong>epoll 收到 socket 可读事件后，唤醒对应协程继续执行。<br><strong>延展：</strong>这是高并发服务常见的模型，能明显降低线程切换成本。</p>
-                <p><strong>Q7：C 的运行时多态怎么实现？</strong><br><strong>A：</strong>C 没有 `virtual`，通常手写函数指针表来模拟。对象结构体里放“行为函数指针”，不同对象填不同实现。<br><strong>例子：</strong>网络驱动抽象层里常见 `ops->send()` 这种写法。<br><strong>延展：</strong>这套思想和 C++ 虚表非常像，只是 C 需要手工维护。</p>
-                <p><strong>Q8：析构函数能抛异常吗？</strong><br><strong>A：</strong>理论能写，但工程上不建议。因为栈展开过程中再抛异常会触发 `terminate`。<br><strong>例子：</strong>对象离开作用域时析构抛异常，程序直接崩。<br><strong>延展：</strong>析构应尽量 `noexcept`，错误用日志或状态码上报。</p>
-                <p><strong>Q9：Go 协程会固定在一个 CPU 吗？</strong><br><strong>A：</strong>不会。goroutine 会被 Go 调度器分配到不同线程和 CPU 核上执行。<br><strong>例子：</strong>同一 goroutine 本次在 CPU0，下一次可能在 CPU3。<br><strong>延展：</strong>通过 `GOMAXPROCS` 控制并行上限，不是固定“一个协程一个 CPU”。</p>
-                <p><strong>Q10：TCP 流量控制怎么做？接收窗口为 0 怎么恢复？</strong><br><strong>A：</strong>接收方通过窗口大小告诉发送方“我还能接多少”。窗口为 0 时，发送方暂停大数据发送，并定期探测窗口。<br><strong>例子：</strong>接收端应用处理慢，缓冲区满，发送端会被迫降速。<br><strong>延展：</strong>这是“流量控制”（端到端），不要和“拥塞控制”（网络层面）混淆。</p>
-                <p><strong>Q11：TIME_WAIT 为什么存在？</strong><br><strong>A：</strong>为了确保最后 ACK 丢失时还能重发，同时等待旧数据包过期，避免干扰新连接。<br><strong>例子：</strong>高并发短连接服务会看到很多 TIME_WAIT，这不一定是故障。<br><strong>延展：</strong>真正要关注的是端口耗尽和连接复用策略。</p>
-                <p><strong>Q12：快排最坏复杂度？怎么优化？</strong><br><strong>A：</strong>最坏 O(n^2)，通常出现在每次选到很差 pivot。<br><strong>例子：</strong>数组已排序但每次都拿第一个元素做 pivot。<br><strong>延展：</strong>可用随机 pivot、三数取中、三路快排；工业实现常是 introsort。</p>
-                <p><strong>Q13：不用临时变量交换两个整数怎么做？</strong><br><strong>A：</strong>可用异或或加减，但可读性差且有风险（溢出、同地址）。<br><strong>例子：</strong>`a ^= b; b ^= a; a ^= b;`。<br><strong>延展：</strong>生产代码更推荐 `std::swap`，面试时说明取舍会加分。</p>
-                <p><strong>Q14：O(n) 时间、一个变量实现洗牌怎么理解？</strong><br><strong>A：</strong>标准是 Fisher-Yates：从后往前遍历，每次随机选 `[0,i]` 与当前位置交换。<br><strong>例子：</strong>扑克牌随机打乱就可以用这个算法。<br><strong>延展：</strong>若随机数不均匀，结果就不是真随机，这是追问点。</p>
-                <p><strong>逐题深挖补充（展开版）：</strong></p>
+                <div class="meta">文档化重构版：前置知识 + 逐题详解 + 命令/代码 + 30 秒答法</div>
+
+                <p><strong>这份文档怎么用：</strong>先看“前置知识”，再看 Q1~Q14。每题统一按“背景 -> 定义 -> 原理 -> 例子 -> 常见坑/排障 -> 30 秒回答模板”。如果你是 0 基础，先把背景和例子看懂，再记 30 秒模板。</p>
+
+                <h2>前置知识 A：进程、线程、协程</h2>
+                <ul>
+                    <li><strong>进程：</strong>资源分配单位，地址空间隔离强，切换开销较大。</li>
+                    <li><strong>线程：</strong>调度单位，线程间共享进程内存，切换成本低于进程。</li>
+                    <li><strong>协程：</strong>用户态轻量“任务”，切换通常在用户态完成，开销更低。</li>
+                </ul>
+                <p><strong>一句话：</strong>进程像“公司”，线程像“员工”，协程像“员工手里的任务卡片”。</p>
+
+                <h2>前置知识 B：阻塞/非阻塞与同步/异步</h2>
+                <ul>
+                    <li><strong>阻塞：</strong>调用后线程卡住等结果。</li>
+                    <li><strong>非阻塞：</strong>调用后立即返回，不保证拿到结果。</li>
+                    <li><strong>同步 IO：</strong>数据准备好前，调用方要负责等待。</li>
+                    <li><strong>异步 IO：</strong>内核在数据准备+拷贝完成后通知调用方。</li>
+                </ul>
+                <p><strong>常见误区：</strong>“非阻塞”不等于“异步”。非阻塞 + epoll 是高频工程方案，但语义仍是同步 IO 多路复用。</p>
+
+                <h2>前置知识 C：网络排障最小工具链</h2>
+                <pre><code># 连接与状态
+ss -tanp
+
+# 网卡流量与丢包（按需）
+ip -s link
+
+# 抓包定位（只抓关键主机+端口）
+tcpdump -i any host 10.0.0.8 and port 8080 -nn -vv
+
+# 系统调用视角看阻塞/错误码
+strace -fp &lt;pid&gt; -e trace=network,read,write
+</code></pre>
+
+                <h2>Q1：Reactor 模式是什么？你实现的服务器架构怎么说？</h2>
+                <p><strong>背景：</strong>一个线程要服务大量连接，不能“一连接一线程”硬扛，否则上下文切换和内存会爆。</p>
+                <p><strong>定义：</strong>Reactor = IO 多路复用 + 事件分发。它接收“可读/可写事件”，再把事件交给对应处理器。</p>
+                <p><strong>原理：</strong>常见链路是 Acceptor 接收新连接，Reactor 监听 fd 事件，业务线程池处理请求。Reactor 负责“谁就绪了”，业务线程负责“怎么处理业务”。</p>
+                <p><strong>工程例子：</strong>聊天服务 2 万连接在线，但每个时刻活跃连接很少。Reactor 模式只处理“当前活跃事件”，吞吐明显高于阻塞线程模型。</p>
+                <p><strong>常见坑：</strong>只讲事件循环不讲连接生命周期（心跳、空闲超时、背压、限流）会被判“只会八股”。</p>
+                <p><strong>30 秒答法：</strong>“Reactor 用 IO 多路复用解决高并发连接管理问题。我的架构是 Acceptor + Reactor + 业务线程池，Reactor 只做事件分发。生产上我会补心跳、超时踢除和背压控制，保证连接长期稳定。”</p>
+
+                <h2>Q2：read 系统调用常见错误有哪些？</h2>
+                <p><strong>背景：</strong>网络读失败不等于网络坏，错误码体现不同语义，处理策略必须区分。</p>
+                <p><strong>定义：</strong>高频包括 `EINTR`、`EAGAIN/EWOULDBLOCK`、`ECONNRESET`。另外 `read` 返回 0 代表对端正常关闭。</p>
+                <p><strong>原理：</strong>`EINTR` 是被信号打断可重试；`EAGAIN` 是非阻塞下“暂时没数据”；`ECONNRESET` 是连接被复位，需要按连接异常处理。</p>
+                <p><strong>工程例子：</strong>非阻塞 socket 遇到 `EAGAIN`，不是报错告警，而是回到事件循环等下一次可读事件。</p>
+                <p><strong>常见坑：</strong>把所有错误都 `while(true)` 重试，容易造成 CPU 空转风暴。</p>
+                <p><strong>30 秒答法：</strong>“`EINTR` 可重试，`EAGAIN` 表示暂时无数据，`ECONNRESET` 是连接异常，`read=0` 是对端正常关闭。我的策略是按错误码分支处理，不做无脑重试。”</p>
+
+                <h2>Q3：对关闭 socket 写会发生什么？</h2>
+                <p><strong>背景：</strong>线上最容易忽略的崩溃点之一：向已关闭连接写数据。</p>
+                <p><strong>定义：</strong>常见结果是返回 `EPIPE`，并可能触发 `SIGPIPE`。若不处理，进程可能被直接终止。</p>
+                <p><strong>原理：</strong>内核检测到对端读端关闭时，写操作会触发“管道/套接字断裂”语义。</p>
+                <p><strong>工程例子：</strong>网关写回响应时偶发进程退出，最终定位是未忽略 `SIGPIPE`。</p>
+                <p><strong>排障命令：</strong></p>
+                <pre><code># 观察进程退出信号
+journalctl -u your_service -n 200
+
+# 定位 write/send 调用返回
+strace -fp &lt;pid&gt; -e trace=write,send,sendto,sendmsg
+</code></pre>
+                <p><strong>治理建议：</strong>进程级忽略 `SIGPIPE`，或在 `send` 使用 `MSG_NOSIGNAL`，并统一处理 `EPIPE`。</p>
+                <p><strong>30 秒答法：</strong>“写关闭连接会 `EPIPE`，还可能触发 `SIGPIPE` 杀进程。生产里要么忽略 `SIGPIPE`，要么 `MSG_NOSIGNAL`，并对 `EPIPE` 做连接回收。”</p>
+
+                <h2>Q4：守护进程是什么？如何实现？</h2>
+                <p><strong>背景：</strong>服务需要脱离终端长期运行，支持重启、日志管理和开机自启。</p>
+                <p><strong>定义：</strong>守护进程是后台运行、无控制终端、长期提供服务的进程。</p>
+                <p><strong>传统实现：</strong>`fork` -> `setsid` -> 可选二次 `fork` -> `umask` -> 切目录 -> 重定向标准 IO。</p>
+                <p><strong>现代实践：</strong>优先 systemd 托管（重启策略、日志统一、资源限制、依赖管理）。</p>
+                <pre><code>[Service]
+ExecStart=/usr/local/bin/myserver
+Restart=always
+RestartSec=2
+LimitNOFILE=200000
+</code></pre>
+                <p><strong>30 秒答法：</strong>“守护进程是脱离终端的后台服务。传统可手写 daemonize 流程，生产更推荐 systemd 托管，因为重启、日志、资源限制都更标准。”</p>
+
+                <h2>Q5：gevent 是什么，协程何时切换？</h2>
+                <p><strong>背景：</strong>Python 线程在高并发 IO 场景成本较高，协程可以提升并发效率。</p>
+                <p><strong>定义：</strong>gevent 是基于 greenlet + 事件循环的协作式并发库，常通过 monkey patch 把阻塞 IO 改成可协作 IO。</p>
+                <p><strong>原理：</strong>协程通常在 IO 等待点让出执行权，调度器运行其他可执行协程。</p>
+                <p><strong>工程例子：</strong>爬虫请求网络时切走协程，CPU 去执行其他请求协程，提高吞吐。</p>
+                <p><strong>常见坑：</strong>CPU 密集任务不主动让出，会拖慢整个事件循环。</p>
+                <p><strong>30 秒答法：</strong>“gevent 是协作式调度，切换点主要在 IO 阻塞边界。它适合 IO 密集，不适合纯 CPU 密集，后者要配多进程或线程池。”</p>
+
+                <h2>Q6：如何实现协程自动切换？</h2>
+                <p><strong>背景：</strong>开发者不想手动写大量“何时切换”的逻辑。</p>
+                <p><strong>定义：</strong>自动切换核心是“非阻塞 IO + 事件循环 + 调度器”。</p>
+                <p><strong>原理：</strong>任务遇到未就绪 IO 时挂起；事件循环监听就绪事件；就绪后恢复对应协程继续执行。</p>
+                <p><strong>工程例子：</strong>epoll 收到 fd 可读事件后，调度器恢复对应协程读数据并继续业务处理。</p>
+                <p><strong>常见坑：</strong>某协程长时间 CPU 计算不让出，会导致“协程饥饿”。</p>
+                <p><strong>30 秒答法：</strong>“自动切换不是魔法，本质是 IO 事件驱动：未就绪挂起，就绪恢复。它极大降低线程切换成本，但要防止 CPU 任务独占事件循环。”</p>
+
+                <h2>Q7：C 的运行时多态怎么实现？</h2>
+                <p><strong>背景：</strong>C 没有 `virtual`，但工程上仍需要“同接口多实现”。</p>
+                <p><strong>定义：</strong>常见做法是函数指针表（手写 vtable）。</p>
+                <pre><code>typedef struct Ops {
+    int (*send)(void* ctx, const void* buf, int n);
+    int (*close)(void* ctx);
+} Ops;
+</code></pre>
+                <p><strong>原理：</strong>对象结构体里持有 `Ops*`，不同对象注入不同实现，运行时通过函数指针分发。</p>
+                <p><strong>工程例子：</strong>网络抽象层可同时支持 TCP、UDP、Unix Domain Socket，不改上层调用接口。</p>
+                <p><strong>常见坑：</strong>类型安全弱于 C++，接口约束不清易产生野指针和 ABI 兼容问题。</p>
+                <p><strong>30 秒答法：</strong>“C 用函数指针表模拟多态：接口固定，实现可替换。优点是灵活，缺点是类型安全和维护成本不如 C++ 语言级多态。”</p>
+
+                <h2>Q8：析构函数能抛异常吗？</h2>
+                <p><strong>背景：</strong>资源释放阶段出错很常见，但处理方式要谨慎。</p>
+                <p><strong>定义：</strong>C++ 中析构函数一般应 `noexcept`；若在栈展开期间再次抛异常，会触发 `std::terminate`。</p>
+                <p><strong>原理：</strong>异常传播过程中再抛第二个异常，运行时无法安全恢复，标准要求终止程序。</p>
+                <p><strong>工程例子：</strong>文件句柄关闭失败不应在析构里抛异常，应记录日志或显式 `close()` 返回错误。</p>
+                <p><strong>30 秒答法：</strong>“析构理论可写抛异常，但工程上应 no-throw。尤其异常展开期间再抛会 terminate。资源释放错误建议用日志或显式 API 返回值处理。”</p>
+
+                <h2>Q9：Go 协程会固定在一个 CPU 吗？</h2>
+                <p><strong>背景：</strong>很多人把 goroutine 误解为“轻量线程且绑定 CPU”。</p>
+                <p><strong>定义：</strong>Go 采用 G-M-P 调度模型，goroutine 会在不同线程和 CPU 核之间调度。</p>
+                <p><strong>原理：</strong>`GOMAXPROCS` 决定可并行执行 Go 代码的 P 数量；调度器支持抢占，长计算任务也可被打断。</p>
+                <p><strong>工程例子：</strong>同一 goroutine 在不同时间片可能由不同 M 执行，不保证 CPU 固定。</p>
+                <p><strong>30 秒答法：</strong>“goroutine 不固定 CPU。Go 用 G-M-P 调度，GOMAXPROCS 控制并行上限，调度器会在多线程多核间迁移并抢占执行。”</p>
+
+                <h2>Q10：TCP 流量控制怎么做？接收窗口为 0 怎么恢复？</h2>
+                <p><strong>背景：</strong>接收端处理慢时，发送端不能无限发送，否则会把对端缓冲冲爆。</p>
+                <p><strong>定义：</strong>流量控制由接收窗口 `rwnd` 驱动；拥塞控制由 `cwnd` 驱动，二者共同限制发送窗口。</p>
+                <p><strong>原理：</strong>当接收端通告窗口为 0，发送端停止常规发送并进入 persist 行为，周期性发送 window probe 探测窗口是否恢复。</p>
+                <p><strong>工程例子：</strong>消费端业务阻塞导致 socket 接收缓冲满，抓包可看到 `Win=0`，发送端吞吐下降。</p>
+                <p><strong>抓包提示：</strong></p>
+                <pre><code>tcpdump -i any host 10.0.0.8 and port 9000 -nn -vv
+# 关注是否出现 Window 0、ZeroWindowProbe、重传
+</code></pre>
+                <p><strong>30 秒答法：</strong>“流量控制是端到端的接收能力协商，窗口 0 时发送端会停发并做窗口探测恢复。注意区分 rwnd（接收能力）和 cwnd（网络拥塞控制）。”</p>
+
+                <h2>Q11：TIME_WAIT 为什么存在？</h2>
+                <p><strong>背景：</strong>短连接服务会出现大量 TIME_WAIT，很多人误判为故障。</p>
+                <p><strong>定义：</strong>TIME_WAIT 通常出现在主动关闭方，持续约 2MSL。</p>
+                <p><strong>原理：</strong>目的是保证最后 ACK 丢失时可重发，以及让旧连接的延迟报文在网络中过期，避免污染新连接。</p>
+                <p><strong>工程例子：</strong>压测后 `ss -tan state time-wait | wc -l` 很高，但服务并无错误；真正风险在端口耗尽。</p>
+                <p><strong>治理边界：</strong>优先连接复用、连接池和端口规划，不建议粗暴“关闭 TIME_WAIT 语义”。</p>
+                <p><strong>30 秒答法：</strong>“TIME_WAIT 是 TCP 可靠关闭机制，不是 bug。它防 ACK 丢失和旧报文污染。治理重点是连接复用和端口容量，而不是破坏协议语义。”</p>
+
+                <h2>Q12：快排最坏复杂度？怎么优化？</h2>
+                <p><strong>背景：</strong>快排平均快，但特定输入会退化。</p>
+                <p><strong>定义：</strong>快排平均 O(n log n)，最坏 O(n^2)。</p>
+                <p><strong>原理：</strong>当每轮分区极度不均衡（如已排序且总选端点）时递归深度接近 n，导致退化。</p>
+                <p><strong>优化：</strong>随机 pivot、三数取中、三路快排（大量重复值）、小区间切插排、introsort 兜底。</p>
+                <p><strong>30 秒答法：</strong>“快排最坏 O(n^2) 来自分区极不均衡。工程里用随机化/三数取中 + 三路快排，必要时退化到堆排（introsort）保证上界。”</p>
+
+                <h2>Q13：不用临时变量交换两个整数怎么做？</h2>
+                <p><strong>背景：</strong>这是典型“面试技巧题”，考的是你是否能说取舍。</p>
+                <p><strong>可行做法：</strong>异或交换或加减交换。</p>
+                <pre><code>// XOR swap (示意)
+a ^= b;
+b ^= a;
+a ^= b;
+</code></pre>
+                <p><strong>风险：</strong>可读性差；加减法可能溢出；若同一变量引用（同地址）会出错。</p>
+                <p><strong>工程结论：</strong>生产优先 `std::swap`（可读、可靠、编译器可优化）。</p>
+                <p><strong>30 秒答法：</strong>“异或/加减都能做，但风险和可读性都差。工程上我会用 `std::swap`，面试里展示技巧后说明取舍才是高分点。”</p>
+
+                <h2>Q14：O(n) 时间、一个变量实现洗牌怎么理解？</h2>
+                <p><strong>背景：</strong>目标是等概率打乱数组，常见错误是“看起来随机但分布有偏”。</p>
+                <p><strong>定义：</strong>标准算法是 Fisher-Yates，时间 O(n)，原地 O(1) 额外空间（除随机索引变量）。</p>
+                <p><strong>原理：</strong>从后往前，第 i 位与 `[0,i]` 随机位置交换，可证明每个排列概率相同。</p>
+                <pre><code>for (int i = n - 1; i &gt; 0; --i) {
+    int j = randInt(0, i);
+    swap(a[i], a[j]);
+}</code></pre>
+                <p><strong>常见坑：</strong>随机数范围写错、低质量随机源导致偏差、每次请求都重复 seed。</p>
+                <p><strong>30 秒答法：</strong>“这题标准解是 Fisher-Yates：从后向前与 `[0,i]` 随机位交换，O(n) 原地完成。关键是随机源和区间要写对，才能保证均匀分布。”</p>
+
+                <h2>逐题追问清单（速查）</h2>
                 <ol>
-                    <li><strong>Q1 Reactor：</strong>要能比较 Reactor 与 Proactor：前者“就绪通知，应用读写”，后者“完成通知，内核主导异步 IO”。</li>
-                    <li><strong>Q2 read 错误：</strong>`read` 返回 0 代表对端正常关闭，这是比错误码更高频的“状态信号”。</li>
-                    <li><strong>Q3 关闭 socket 写：</strong>除了 `EPIPE`，还要知道默认 `SIGPIPE` 可能直接杀进程，线上必须显式处理。</li>
-                    <li><strong>Q4 守护进程：</strong>现代生产更常用 systemd 托管，守护化细节与部署规范要结合讲。</li>
-                    <li><strong>Q5/Q6 协程：</strong>追问常到公平调度和饥饿问题：某协程长期不让出会拖慢整体吞吐。</li>
-                    <li><strong>Q7 C 多态：</strong>函数指针表可实现灵活抽象，但可维护性和类型安全不如 C++ 语言级多态。</li>
-                    <li><strong>Q8 析构异常：</strong>异常安全等级（basic/strong/no-throw）是加分点，析构一般要求 no-throw。</li>
-                    <li><strong>Q9 Go 调度：</strong>Go 现在有抢占式调度，长时间 CPU 计算协程也能被打断调度。</li>
-                    <li><strong>Q10 流控：</strong>要能区分 rwnd（接收方能力）和 cwnd（网络拥塞控制）共同限制发送窗口。</li>
-                    <li><strong>Q11 TIME_WAIT：</strong>常见治理是连接池、长连接复用、端口规划，不是简单粗暴关掉机制。</li>
-                    <li><strong>Q12 快排：</strong>退化防护要有随机化或 introsort，避免在近有序数据上性能崩溃。</li>
-                    <li><strong>Q13 交换整数：</strong>异或交换在可读性和可维护性上都差，且同地址变量会出错。</li>
-                    <li><strong>Q14 洗牌：</strong>要强调“随机源质量”对结果公平性影响，伪随机偏差会影响业务可信度。</li>
+                    <li>Q1：Reactor 与 Proactor 区别？单 Reactor 和主从 Reactor 何时选？</li>
+                    <li>Q2：`read` 返回 0 与 `EAGAIN` 的语义差异？</li>
+                    <li>Q3：如何在库内避免全局改 `SIGPIPE`？</li>
+                    <li>Q4：为什么生产更推荐 systemd 而非手写 daemonize？</li>
+                    <li>Q5/Q6：协程饥饿怎么识别与治理？</li>
+                    <li>Q7：C 函数指针表如何做接口版本兼容？</li>
+                    <li>Q8：异常安全 basic/strong/no-throw 怎么区分？</li>
+                    <li>Q9：GOMAXPROCS 与容器 CPU quota 的关系？</li>
+                    <li>Q10：如何区分 rwnd 限速和 cwnd 限速？</li>
+                    <li>Q11：TIME_WAIT 多时哪些参数可调，哪些不建议乱调？</li>
+                    <li>Q12：introsort 为什么能兼顾平均性能和最坏上界？</li>
+                    <li>Q13：为什么“技巧正确”不代表“工程正确”？</li>
+                    <li>Q14：如何验证洗牌分布是否接近均匀？</li>
                 </ol>
-                <p><strong>完整答题技巧：</strong>服务端题要体现“可落地排障能力”，建议每题补一条真实命令或日志指标（如 `ss -s`、`tcpdump`、错误码统计），这会明显拉开和纯八股的差距。</p>
-                <p><strong>来源：</strong>作者：特立独行MVP，<a href="https://www.nowcoder.com/discuss/353154871211794432" target="_blank" rel="noopener noreferrer">牛客原帖</a>。</p>
+
+                <p><strong>答题总模板（建议背诵）：</strong>“这个问题的本质是 XXX（背景）。核心机制是 XXX（原理）。工程上我会这样做 XXX（落地方案）。常见坑是 XXX（风险）。我会用 XXX（命令/指标）验证效果。”</p>
+                <p><strong>来源：</strong>作者：特立独行MVP，<a href="https://www.nowcoder.com/discuss/353154871211794432" target="_blank" rel="noopener noreferrer">牛客原帖</a>；并结合 Linux man-pages、RFC 793、Go/runtime、gevent 官方文档做技术补全。</p>
             </article>
 
             <article class="article-content" id="tencent-nowcoder-arch">
