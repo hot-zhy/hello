@@ -4043,6 +4043,51 @@ unsigned short host = ntohs(net);</code></pre>
                     <li><strong>TIME_WAIT 过多怎么治理？</strong>连接复用、连接池、端口规划，避免破坏协议语义。</li>
                 </ol>
 
+                <h2>基础知识加餐题库（计网 + OS）</h2>
+
+                <h3>计网加餐 Q1：OSI 七层和 TCP/IP 四层怎么对应？</h3>
+                <p><strong>背景：</strong>这题常用来判断你是否理解“协议分层”的意义，而不是死背层名。</p>
+                <p><strong>对应关系：</strong>TCP/IP 的应用层 = OSI 的应用层/表示层/会话层；TCP/IP 传输层 ≈ OSI 传输层；TCP/IP 网络层 ≈ OSI 网络层；TCP/IP 网络接口层 ≈ OSI 数据链路层+物理层。</p>
+                <p><strong>为什么要分层：</strong>解耦。上层只关心“我要发什么”，下层关心“怎么可靠送达”。这样替换某层实现不会重写全栈。</p>
+                <p><strong>面试要点：</strong>能举例：HTTP 在应用层，TCP 在传输层，IP 在网络层，以太网在链路层。</p>
+
+                <h3>计网加餐 Q2：TCP 为什么可靠？</h3>
+                <p><strong>核心机制：</strong>序列号+确认应答（ACK）、超时重传、校验和、乱序重排、流量控制、拥塞控制。</p>
+                <p><strong>例子：</strong>某段数据丢失，对端迟迟不 ACK，发送端超时后重传。接收端按序号重组并去重。</p>
+                <p><strong>常见误区：</strong>“TCP 不会丢包”是错的；丢包是网络事实，TCP 做的是“丢了后能恢复”。</p>
+
+                <h3>计网加餐 Q3：拥塞控制和流量控制有什么区别？</h3>
+                <p><strong>流量控制（rwnd）：</strong>接收方告诉发送方“我还能收多少”，防止把接收端缓冲打爆。</p>
+                <p><strong>拥塞控制（cwnd）：</strong>发送方根据网络状况（丢包/时延）调节发送速率，避免网络拥塞。</p>
+                <p><strong>一句话：</strong>流量控制解决“接收端吃不下”，拥塞控制解决“网络扛不住”。</p>
+
+                <h3>计网加餐 Q4：DNS 解析为什么有时快有时慢？</h3>
+                <p><strong>流程：</strong>浏览器缓存 -> 系统缓存 -> 本地 DNS -> 递归查询（根/顶级/权威）。</p>
+                <p><strong>影响因素：</strong>缓存命中、解析链路长度、权威 DNS 性能、网络 RTT、是否启用 DoH/DoT。</p>
+                <p><strong>排障命令：</strong><code>nslookup</code>、<code>dig +trace</code>、查看本地缓存命中情况。</p>
+
+                <h3>OS 加餐 Q1：进程间通信（IPC）常见方式有哪些？</h3>
+                <p><strong>常见 IPC：</strong>管道（pipe）、消息队列、共享内存、信号量、套接字、信号。</p>
+                <p><strong>选型思路：</strong>同机高吞吐常用共享内存（配合锁/信号量）；跨机通信一般用 socket。</p>
+                <p><strong>注意：</strong>共享内存最快，但同步正确性最难，必须设计好互斥与可见性。</p>
+
+                <h3>OS 加餐 Q2：死锁四个必要条件是什么？怎么破？</h3>
+                <p><strong>四条件：</strong>互斥、请求并保持、不可剥夺、循环等待。</p>
+                <p><strong>破法：</strong>至少破坏一个条件。工程上最常见是资源有序申请（破循环等待）或 try-lock+超时回退。</p>
+                <p><strong>面试加分：</strong>给一个例子：统一锁顺序（先 A 后 B）能显著降低双锁死锁概率。</p>
+
+                <h3>OS 加餐 Q3：页面置换算法（LRU/FIFO）怎么理解？</h3>
+                <p><strong>背景：</strong>物理内存有限，页不够时要淘汰旧页。</p>
+                <p><strong>FIFO：</strong>先进先出，简单但可能出现 Belady 异常。</p>
+                <p><strong>LRU：</strong>淘汰最长时间未访问页，通常更贴近局部性原理。</p>
+                <p><strong>工程现实：</strong>纯 LRU 成本高，内核常用近似 LRU（如时钟算法）权衡效率与效果。</p>
+
+                <h3>OS 加餐 Q4：高 CPU、CPU 抢占、上下文切换怎么一起理解？</h3>
+                <p><strong>高 CPU：</strong>说明 CPU 忙，但不一定是有效工作。</p>
+                <p><strong>上下文切换高：</strong>线程频繁切换会吞掉大量时间，表现为“CPU 高但吞吐不升”。</p>
+                <p><strong>排障组合：</strong><code>top</code> 看整体，<code>pidstat -w</code> 看切换，<code>perf top</code> 看热点函数。</p>
+                <p><strong>常见优化：</strong>减少锁竞争、降低线程数、批处理合并小任务。</p>
+
                 <p><strong>答题总模板（建议背诵）：</strong>“先说这个问题解决什么，再给核心机制，然后给一条命令或一个例子，最后说常见坑和工程取舍。”</p>
                 <p><strong>来源：</strong>作者：超越护体，<a href="https://www.nowcoder.com/discuss/353156266354745344?sourceSSR=search" target="_blank" rel="noopener noreferrer">牛客原帖</a>；并结合 Linux man-pages、C++ 语义规则和网络协议常识做技术补全。</p>
             </article>
