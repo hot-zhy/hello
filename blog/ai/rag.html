@@ -9,4 +9,8 @@
 <div class="qa"><p class="q"><strong>Q4：RAG 常见失败模式？</strong></p><p><strong>A4：</strong>召回不到、召回不准、生成偏题、证据冲突。要分别针对索引、重排、提示约束和证据仲裁做治理。</p></div>
 <div class="qa"><p class="q"><strong>Q5：怎么做 RAG 评测？</strong></p><p><strong>A5：</strong>检索层看 Recall@k、MRR，生成层看正确性、引用一致性和完整性。线上再监控纠错率、追问率和证据点击率。</p></div>
 <div class="qa"><p class="q"><strong>Q6：RAG 和微调如何取舍？</strong></p><p><strong>A6：</strong>知识更新频繁、需要可追溯优先 RAG；任务稳定、风格固定可做微调。实战里常见“RAG + 轻微调”的混合路线。</p></div>
+<div class="qa"><p class="q"><strong>Q7：什么是倒排索引？为什么 RAG 里还要它？</strong></p><p><strong>A7：</strong>倒排索引是“词项到文档”的映射结构，擅长关键词和短语精确命中。在报错码、专有名词、法规条款这类任务中，BM25/倒排召回通常比纯向量更稳定。</p></div>
+<div class="qa"><p class="q"><strong>Q8：向量数据库和传统数据库的核心区别？</strong></p><p><strong>A8：</strong>向量数据库主打高维相似度检索，依赖 ANN 索引（如 HNSW、IVF）在低延迟下找近邻；传统数据库主打精确检索和事务处理。两者常组合使用：向量库做语义召回，关系库做结构化过滤与业务联表。</p></div>
+<div class="qa"><p class="q"><strong>Q9：混合检索（Hybrid Retrieval）如何落地？</strong></p><p><strong>A9：</strong>并行跑关键词召回和向量召回，合并候选后统一重排。融合可用 RRF 或加权分数，最后用重排模型做精排。上线要按 Recall@k、NDCG、时延和成本联合调参。</p></div>
+<div class="qa"><p class="q"><strong>Q10：混合检索常见坑点？</strong></p><p><strong>A10：</strong>常见问题是候选过大导致重排过慢、关键词通道与语义通道权重失衡、metadata 过滤顺序不当。工程上应先限制候选规模，再做分层重排并持续做离线回放评估。</p></div>
 </div></body></html>
